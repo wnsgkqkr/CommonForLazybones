@@ -3,6 +3,8 @@ package com.cfl.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 public class Authority {
@@ -12,4 +14,6 @@ public class Authority {
     private String tenantId;
     private String serviceName;
     private String authoritySequence;
+
+    private Map<String, User> authorityToUsers;
 }

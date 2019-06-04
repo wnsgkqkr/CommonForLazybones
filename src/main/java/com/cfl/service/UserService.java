@@ -16,18 +16,16 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
     //User - Authority Cache
-    private Map<String,Map<String,Map<String,User>>> userAuthorityCache = new HashMap<>();
+    public static Map<String,Map<String,Map<String,User>>> userAuthorityCache = new HashMap<>();
 
-    public JSONObject insertUserAuthority(JSONObject request){
-
-    }
-    public JSONObject updateUserAuthority(JSONObject request){
-
-    }
-    public JSONObject deleteUserAuthority(JSONObject request){
-
-    }
     public JSONObject getUserAuthority(JSONObject request){
-
+        User user = userAuthorityCache.get().get().get();
+        if(user != null){
+            user.getUserToAuthorities()
+        }else{
+            userMapper.getUserAuthority();
+        }
+        json작업
+        return ~;
     }
 }
