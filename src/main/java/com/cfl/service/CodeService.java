@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service;
 @Service
 public class CodeService {
     @Autowired
-    CodeMapper codeMapper;
+    private CodeMapper codeMapper;
 }

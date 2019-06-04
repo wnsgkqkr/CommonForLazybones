@@ -3,13 +3,17 @@ package com.cfl.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 public class CflObject {
     private String objectId;
     private String objectName;
-    private String parentObjectId;
+    private Map<String, CflObject> parentObjects;
     private String tenantId;
     private String serviceName;
     private String objectSequence;
+    private Map<String, CflObject> subObjects;
+    private Map<String, Authority> authorities;
 }
