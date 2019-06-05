@@ -1,11 +1,13 @@
 package com.cfl.service;
 
+import com.cfl.cache.Cache;
 import com.cfl.customexception.GetHttpStatusException;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.mapper.AuthorityMapper;
 import com.cfl.mapper.MappingMapper;
 import com.cfl.mapper.UserMapper;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -57,40 +59,23 @@ public class CommonService {
             throw new GetHttpStatusException(e);
         }
     }
-
-    //user-authority table insert, update, delete, get
-    public void insertUserAuthority(JSONObject requestObject){
+    //user-authority insert / delete Database and clear cache
+    public void createUserAuthority(JSONObject requestObject){
         User user = setUser(requestObject);
+        userMapper.insertUser(user);
         Authority authority = setAuthority(requestObject);
-        if(userMapper.getUser(user) == null){
-            userMapper.insertUser(user);
-            //initial User - Authority Cache
-            Map<String, User> userMap = new HashMap<>();
-            userMap.put(user.getUserId(), user);
-            Map<String, Map<String, User>> tenantUserMap = new HashMap<>();
-            tenantUserMap.put(user.getTenantId(), userMap);
-            UserService.userAuthorityCache.put(user.getServiceName(),tenantUserMap);
-            log.info(user.getUserId()+" Cache is created");
-        }
         mappingMapper.insertUserAuthority(user, authority);
-
-        UserService.userAuthorityCache.get(user.getServiceName()).get(user.getTenantId()).
-                get(user.getUserId()).getUserToAuthorities().put(authority.getAuthorityId(), authority);
-        AuthorityService.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).
-                get(authority.getAuthorityId()).getAuthorityToUsers().put(user.getUserId(),user);
+        clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
     }
-    public void deleteUserAuthority(JSONObject requestObject){
+    public void removeUserAuthority(JSONObject requestObject){
         User user = setUser(requestObject);
         Authority authority = setAuthority(requestObject);
         mappingMapper.deleteUserAuthority(user, authority);
-
-        UserService.userAuthorityCache.get(user.getServiceName()).get(user.getTenantId()).
-                get(user.getUserId()).getUserToAuthorities().remove(authority.getAuthorityId());
-        
+        clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
     }
 
+    //JSON request to Authority Object
     public Authority setAuthority(JSONObject requestObject){
-        //JSON request to Authority Object
         Authority authority = new Authority();
         authority.setAuthorityId((String)requestObject.getJSONObject("auth").get("authId"));
         authority.setAuthorityName((String)requestObject.getJSONObject("auth").get("authName"));
@@ -102,8 +87,8 @@ public class CommonService {
         return authority;
     }
 
+    //JSON request to User Object
     public User setUser(JSONObject requestObject){
-        //JSON request to User Object
         User user = new User();
         user.setUserId((String)requestObject.getJSONObject("user").get("userId"));
         user.setUserType((String)requestObject.getJSONObject("user").get("userType"));
@@ -112,5 +97,23 @@ public class CommonService {
         user.setTenantId((String)requestObject.get("tenantId"));
 
         return user;
+    }
+
+    //Object to JSON
+    public JSONObject toJson(Object object){
+        return new JSONObject(new Gson().toJson(object));
+    }
+
+    public void clearUserAuthorityCache(){
+        Cache.userAuthorityCache.clear();
+        Cache.authorityUserCache.clear();
+    }
+    public void clearUserAuthorityServiceCache(String serviceName){
+        Cache.userAuthorityCache.get(serviceName).clear();
+        Cache.authorityUserCache.get(serviceName).clear();
+    }
+    public void clearUserAuthorityTenantCache(String serviceName,String tenantId){
+        Cache.userAuthorityCache.get(serviceName).get(tenantId).clear();
+        Cache.authorityUserCache.get(serviceName).get(tenantId).clear();
     }
 }

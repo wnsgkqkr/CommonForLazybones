@@ -1,12 +1,13 @@
 package com.cfl.service;
 
+import com.cfl.cache.Cache;
 import com.cfl.domain.Authority;
+import com.cfl.domain.User;
 import com.cfl.mapper.AuthorityMapper;
-import com.google.gson.Gson;
+import com.cfl.mapper.MappingMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,53 +16,82 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class AuthorityService {
+public class AuthorityService implements CflService<Authority>{
     @Autowired
     private AuthorityMapper authorityMapper;
     @Autowired
+    private MappingMapper mappingMapper;
+    @Autowired
     private CommonService commonService;
-    //Authority - User Cache
-    public static Map<String,Map<String,Map<String,Authority>>> authorityUserCache = new HashMap<>();
 
-
-    public JSONObject getAuthorityUser(JSONObject requestObject){
-        Authority authority = authorityUserCache.get().get().get();
-        if(authority != null){
-            authority.getAuthorityToUsers();
-        }else{
-            authorityMapper.getAuthorityUser();
-        }
-        json작업
-        return ~;
-    }
-
-    public void insertAuthority(JSONObject requestObject){
+    //Authority insert / update / delete Database and refresh cache
+    public Authority createData(JSONObject requestObject){
         Authority authority = commonService.setAuthority(requestObject);
-        if(authorityMapper.getAuthority(authority) != null){
-            throw new DuplicateKeyException("Duplicate: same Id is already Exist");
-        }
         authorityMapper.insertAuthority(authority);
-        log.info(authority.getAuthorityName()+" is inserted");
+        commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        return authority;
+    }
+    public Authority modifyData(JSONObject requestObject){
+        Authority authority = commonService.setAuthority(requestObject);
+        authorityMapper.updateAuthority(authority);
+        commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        return authority;
+    }
+    public Authority removeData(JSONObject requestObject){
+        Authority authority = commonService.setAuthority(requestObject);
+        authorityMapper.deleteAuthority(authority);
+        commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        return authority;
+    }
+    //get Authority from cache or Database and put cache
+    public Authority getData(JSONObject requestObject){
+        Authority authority = commonService.setAuthority(requestObject);
+        Map<String, Authority> authorityMap = getAuthorityMap(authority);
+        authority = authorityMap.get(authority.getAuthorityId());
+        if(authority == null) {
+            authority = authorityMapper.selectAuthority(authority);
+            Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).put(authority.getAuthorityId(), authority);
+        }
+        return authority;
+    }
+    //get UserList in Authority from cache or Database and put cache
+    public List<User> getAuthorityUsers(JSONObject requestObject){
+        Authority authority = commonService.setAuthority(requestObject);
+        Map<String, Authority> authorityMap = getAuthorityMap(authority);
+        authority = authorityMap.get(authority.getAuthorityId());
+        if(authority != null){
+            return authority.getAuthorityToUsers();
+        }else{
+            List<User> userList = mappingMapper.getAuthorityUsers(authority);
+            authority.setAuthorityToUsers(userList);
+            Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).put(authority.getAuthorityId(), authority);
+            return userList;
+        }
+    }
 
-        //initial authority - user cache
-        Map<String, Authority> authorityMap = new HashMap<>();
-        authorityMap.put(authority.getAuthorityId(), authority);
-        Map<String, Map<String, Authority>> tenantAuthorityMap = new HashMap<>();
-        tenantAuthorityMap.put(authority.getTenantId(), authorityMap);
-        authorityUserCache.put(authority.getServiceName(),tenantAuthorityMap);
-        log.info(authority.getAuthorityName()+" Cache is created");
+    //get All authorities in Tenant
+    public List<Authority> getTenantAuthorities(JSONObject requestObject){
+        Authority authority = commonService.setAuthority(requestObject);
+        List<Authority> authorityList = authorityMapper.selectTenantAuthorities(authority);
+        return authorityList;
     }
-    public void updateAuthority(JSONObject requestObject){
-        authorityMapper.updateAuthority(commonService.setAuthority(requestObject));
-        log.info((String)requestObject.getJSONObject("auth").get("authName")+" is updated");
-    }
-    public void deleteAuthority(JSONObject requestObject){
-        authorityMapper.deleteAuthority(commonService.setAuthority(requestObject));
-        log.info((String)requestObject.getJSONObject("auth").get("authName")+" is deleted");
-    }
-    public JSONObject getAuthorities(JSONObject requestObject){
-        List<Authority> authorityList = authorityMapper.getAuthorities(commonService.setAuthority(requestObject));
-        JSONObject jsonObject = new JSONObject(new Gson().toJson(authorityList));
-        return jsonObject;
+
+    //get AuthorityMap in Cache(make cache)
+    public Map<String, Authority> getAuthorityMap(Authority authority){
+        String serviceName = authority.getServiceName();
+        Map<String, Map<String, Authority>> serviceNameMap = Cache.authorityUserCache.get(serviceName);
+        if(serviceNameMap == null){
+            serviceNameMap = new HashMap<>();
+            Cache.authorityUserCache.put(serviceName, serviceNameMap);
+        }
+
+        String tenantId = authority.getTenantId();
+        Map<String, Authority> TenantIdMap = serviceNameMap.get(tenantId);
+        if(TenantIdMap==null){
+            TenantIdMap = new HashMap<>();
+            serviceNameMap.put(tenantId,TenantIdMap);
+        }
+
+        return TenantIdMap;
     }
 }

@@ -13,4 +13,6 @@ public class Code {
     private int sortOrder;
     private boolean isUsed;
     private String multiLanguageCode;
+    private String serviceName;
+    private String tenantId;
 }

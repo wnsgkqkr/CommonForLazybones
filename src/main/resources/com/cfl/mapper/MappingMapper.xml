@@ -15,5 +15,15 @@
         where auth_seq = #{authority.authoritySequence} and user_seq = #{user.userSequence}
     </delete>
 
+    <insert id="insertObjectAuthority">
+        insert into object_auth (auth_seq, objt_seq)
+        values (#{authority.authoritySequence}, #{object.objectSequence})
+    </insert>
+
+    <delete id="deleteObjectAuthority">
+        delete from object_auth
+        where auth_seq = #{authority.authoritySequence} and objt_seq = #{object.objectSequence}
+    </delete>
+
 </mapper>
 

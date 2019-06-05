@@ -5,7 +5,7 @@
 <mapper
         namespace="com.cfl.mapper.AuthorityMapper">
 
-    <select id="getAuthorities" resultType="Authority">
+    <select id="getTenantAuthorities" resultType="Authority">
         select *
         from authority
         where svc_nm = #{authority.serviceName} and tnnt_id = #{authority.tenantId}

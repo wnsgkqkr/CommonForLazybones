@@ -12,18 +12,18 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class NetworkAclService {
+public class NetworkAclService implements CflService<AllowedServer>{
     @Autowired
     private AllowedServerMapper allowedServerMapper;
 
     public boolean isAllowedServer(String ipv4Address){
-        AllowedServer allowedServer = allowedServerMapper.getAllowedServerByIpv4(ipv4Address);
+        AllowedServer allowedServer = allowedServerMapper.selectAllowedServerByIpv4(ipv4Address);
         //check single IP
         if(allowedServer != null) {
             return true;
         }
         //check regular expression
-        List<AllowedServer> regExpServerList = allowedServerMapper.getRegExpServerList();
+        List<AllowedServer> regExpServerList = allowedServerMapper.selectRegExpServerList();
         for(AllowedServer regExpServer : regExpServerList){
             String regExp = regExpServer.getServerIp();
 
@@ -33,23 +33,22 @@ public class NetworkAclService {
         }
         return false;
     }
-
-    public void insertNetworkAcl(JSONObject requestObject){
-        allowedServerMapper.insertAllowedServer(setAllowedServer(requestObject));
-        log.info((String)requestObject.getJSONObject("allowedServer").get("serverIp")+" is inserted");
+    // insert / update / delete / select allowedServer from database
+    public AllowedServer createData(JSONObject requestObject){
+        return allowedServerMapper.insertAllowedServer(setAllowedServer(requestObject));
     }
-    public void updateNetworkAcl(JSONObject requestObject){
+    public AllowedServer modifyData(JSONObject requestObject){
         String originalIp = (String)requestObject.get("originalKey");
-        allowedServerMapper.updateAllowedServer(setAllowedServer(requestObject), originalIp);
-        log.info((String)requestObject.getJSONObject("allowedServer").get("serverIp")+" is updated");
+        return allowedServerMapper.updateAllowedServer(setAllowedServer(requestObject), originalIp);
     }
-    public void deleteNetworkAcl(JSONObject requestObject){
-        allowedServerMapper.deleteAllowedServer(setAllowedServer(requestObject));
-        log.info((String)requestObject.getJSONObject("allowedServer").get("serverIp")+" is deleted");
+    public AllowedServer removeData(JSONObject requestObject){
+        return allowedServerMapper.deleteAllowedServer(setAllowedServer(requestObject));
     }
-
+    public AllowedServer getData(JSONObject requestObject){
+        return allowedServerMapper.selectAllowedServer(setAllowedServer(requestObject));
+    }
+    //JSON request to AllowedServer Object
     public AllowedServer setAllowedServer(JSONObject requestObject){
-        //JSON request to AllowedServer Object
         AllowedServer allowedServer = new AllowedServer();
         allowedServer.setServerIp((String)requestObject.getJSONObject("allowedServer").get("serverIp"));
         allowedServer.setServerName((String)requestObject.getJSONObject("allowedServer").get("serverName"));

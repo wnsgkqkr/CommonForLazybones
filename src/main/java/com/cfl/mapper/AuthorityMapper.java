@@ -10,8 +10,8 @@ public interface AuthorityMapper {
     void insertAuthority(Authority authority);
     void updateAuthority(Authority authority);
     void deleteAuthority(Authority authority);
-    Authority getAuthority(Authority authority);
+    Authority selectAuthority(Authority authority);
 
-    List<Authority> getAuthorities(Authority authority);
+    List<Authority> selectTenantAuthorities(Authority authority);
 
 }
