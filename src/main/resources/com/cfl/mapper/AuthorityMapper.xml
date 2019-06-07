@@ -5,34 +5,56 @@
 <mapper
         namespace="com.cfl.mapper.AuthorityMapper">
 
-    <select id="getTenantAuthorities" resultType="Authority">
-        select *
-        from authority
-        where svc_nm = #{authority.serviceName} and tnnt_id = #{authority.tenantId}
+    <select id="selectTenantAuthorities" resultType="Authority">
+        SELECT
+            *
+        FROM
+            cfl_authority
+        WHERE
+            svc_nm = #{authority.serviceName}
+            AND tnnt_id = #{authority.tenantId}
     </select>
 
-    <select id="getAuthority" resultType="Authority">
-        select *
-        from user
-        where svc_nm = #{authority.serviceName} and tnnt_id = #{authority.tenantId} and auth_id = #{authority.authorityId}
+    <select id="selectAuthority" resultType="Authority">
+        SELECT
+            *
+        FROM
+            cfl_authority
+        WHERE
+            svc_nm = #{authority.serviceName}
+            AND tnnt_id = #{authority.tenantId}
+            AND auth_id = #{authority.authorityId}
     </select>
 
     <insert id="insertAuthority" useGeneratedKeys="true" keyProperty="authoritySequence">
-        insert into authority (auth_id, auth_nm, auth_type, tnnt_id, svc_nm)
-        value (#{authority.authorityId}, #{authority.authorityName}, #{authority.authorityType}, #{authority.tenantId}, #{authority.serviceName})
+        INSERT INTO
+            cfl_authority (auth_id, auth_nm, auth_type, tnnt_id, svc_nm)
+        VALUE
+            (#{authority.authorityId}
+            , #{authority.authorityName}
+            , #{authority.authorityType}
+            , #{authority.tenantId}
+            , #{authority.serviceName})
     </insert>
 
     <update id="updateAuthority">
-        update authority
-        set auth_id = #{authority.authorityId}, tnnt_id = #{allowedServer.tenantId},
-            auth_nm = #{authority.authorityName}, svc_nm = #{allowedServer.serviceName}),
-            auth_type = #{authority.authorityType}
-        where auth_seq = #{authority.authoritySequence}
+        UPDATE
+            cfl_authority
+        SET
+            auth_id = #{authority.authorityId}
+            , tnnt_id = #{authority.tenantId}
+            , auth_nm = #{authority.authorityName}
+            , svc_nm = #{authority.serviceName})
+            , auth_type = #{authority.authorityType}
+        WHERE
+            auth_seq = #{authority.authoritySequence}
     </update>
 
     <delete id="deleteAuthority">
-        delete from authority
-        where auth_seq = #{authority.authoritySequence}
+        DELETE FROM
+            cfl_authority
+        WHERE
+            auth_seq = #{authority.authoritySequence}
     </delete>
 
 </mapper>

@@ -35,14 +35,20 @@ public class NetworkAclService implements CflService<AllowedServer>{
     }
     // insert / update / delete / select allowedServer from database
     public AllowedServer createData(JSONObject requestObject){
-        return allowedServerMapper.insertAllowedServer(setAllowedServer(requestObject));
+        AllowedServer allowedServer = setAllowedServer(requestObject);
+        allowedServerMapper.insertAllowedServer(allowedServer);
+        return allowedServer;
     }
     public AllowedServer modifyData(JSONObject requestObject){
         String originalIp = (String)requestObject.get("originalKey");
-        return allowedServerMapper.updateAllowedServer(setAllowedServer(requestObject), originalIp);
+        AllowedServer allowedServer = setAllowedServer(requestObject);
+        allowedServerMapper.updateAllowedServer(allowedServer, originalIp);
+        return allowedServer;
     }
     public AllowedServer removeData(JSONObject requestObject){
-        return allowedServerMapper.deleteAllowedServer(setAllowedServer(requestObject));
+        AllowedServer allowedServer = setAllowedServer(requestObject);
+        allowedServerMapper.deleteAllowedServer(allowedServer);
+        return allowedServer;
     }
     public AllowedServer getData(JSONObject requestObject){
         return allowedServerMapper.selectAllowedServer(setAllowedServer(requestObject));

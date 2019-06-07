@@ -9,14 +9,12 @@ import java.util.Map;
 
 @Mapper
 public interface CflObjectMapper {
-    void insertCflObject(CflObject object);
-    void updateCflObject(CflObject object);
-    void deleteCflObject(CflObject object);
-    CflObject selectCflObject(CflObject object);
+    void insertObject(CflObject object);
+    void updateObject(CflObject object);
+    void deleteObject(CflObject object);
+    CflObject selectObject(CflObject object);
 
     List<CflObject> selectAllObjects();
     List<CflObject> selectServiceObjects(String ServiceName);
     List<CflObject> selectTenantObjects(String ServiceName, String tenantId);
-
-    Map<String, List<String>> selectObjectIdSubObjectIdListMap(String serviceName, String tenantId);
 }

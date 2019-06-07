@@ -10,9 +10,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -62,7 +60,10 @@ public class AuthorityService implements CflService<Authority>{
         if(authority != null){
             return authority.getAuthorityToUsers();
         }else{
-            List<User> userList = mappingMapper.getAuthorityUsers(authority);
+            List<User> userList = mappingMapper.selectAuthorityUsers(authority);
+            if(userList == null){
+                userList = Collections.emptyList();
+            }
             authority.setAuthorityToUsers(userList);
             Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).put(authority.getAuthorityId(), authority);
             return userList;

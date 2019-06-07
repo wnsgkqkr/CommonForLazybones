@@ -22,8 +22,7 @@ public class ObjectController {
     @PostMapping(value="/object/authority")
     public JSONObject insertObjectAuthority(@RequestBody JSONObject requestObject){
         try {
-            List<Authority> authorityList = objectService.createObjectAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(authorityList));
+            return commonService.successResult(objectService.createObjectAuthority(requestObject));
         } catch (Exception e){
             return commonService.failResult(commonService.toJson(e));
         }
@@ -31,8 +30,7 @@ public class ObjectController {
     @DeleteMapping(value="/object/authority")
     public JSONObject deleteObjectAuthority(@RequestBody JSONObject requestObject){
         try {
-            List<Authority> authorityList = objectService.removeObjectAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(authorityList));
+            return commonService.successResult(objectService.removeObjectAuthority(requestObject));
         } catch (Exception e){
             return commonService.failResult(commonService.toJson(e));
         }

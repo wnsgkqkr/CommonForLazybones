@@ -5,8 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface CodeMapper {
-    Code insertCode(Code code);
-    Code updateCode(Code code);
-    Code deleteCode(Code code);
+    void insertCode(Code code);
+    void updateCode(Code code);
+    void deleteCode(Code code);
     Code selectCode(Code code);
 }

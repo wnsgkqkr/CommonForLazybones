@@ -12,11 +12,12 @@ import java.util.Map;
 public interface MappingMapper {
     void insertUserAuthority(User user, Authority authority);
     void deleteUserAuthority(User user, Authority authority);
-    List<Authority> insertObjectAuthority(CflObject object, Authority authority);
-    List<Authority> deleteObjectAuthority(CflObject object, Authority authority);
+    void insertObjectAuthority(CflObject object, Authority authority);
+    void deleteObjectAuthority(CflObject object, Authority authority);
 
-    List<String> getObjectAuthorityIds(CflObject object);
-    List<Authority> getUserAuthorities(User user);
-    List<User> getAuthorityUsers(Authority authority);
-    Map<String, List<String>> getObjectIdAuthorityIdListMap(String serviceName, String tenantId);
+    List<String> selectObjectAuthorityIds(CflObject object);
+    List<Authority> selectUserAuthorities(User user);
+    List<User> selectAuthorityUsers(Authority authority);
+    Map<String, List<String>> selectObjectIdAuthorityIdListMap(String serviceName, String tenantId);
+    Map<String, List<String>> selectObjectIdSubObjectIdListMap(String serviceName, String tenantId);
 }

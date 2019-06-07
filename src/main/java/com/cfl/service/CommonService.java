@@ -104,15 +104,27 @@ public class CommonService {
     }
 
     public void clearUserAuthorityCache(){
-        Cache.userAuthorityCache.clear();
-        Cache.authorityUserCache.clear();
+        synchronized (Cache.authorityUserCache) {
+            Cache.authorityUserCache.clear();
+        }
+        synchronized (Cache.userAuthorityCache){
+            Cache.userAuthorityCache.clear();
+        }
     }
     public void clearUserAuthorityServiceCache(String serviceName){
-        Cache.userAuthorityCache.get(serviceName).clear();
-        Cache.authorityUserCache.get(serviceName).clear();
+        synchronized (Cache.authorityUserCache) {
+            Cache.authorityUserCache.get(serviceName).clear();
+        }
+        synchronized (Cache.userAuthorityCache){
+            Cache.userAuthorityCache.get(serviceName).clear();
+        }
     }
     public void clearUserAuthorityTenantCache(String serviceName,String tenantId){
-        Cache.userAuthorityCache.get(serviceName).get(tenantId).clear();
-        Cache.authorityUserCache.get(serviceName).get(tenantId).clear();
+        synchronized (Cache.authorityUserCache) {
+            Cache.authorityUserCache.get(serviceName).get(tenantId).clear();
+        }
+        synchronized (Cache.userAuthorityCache){
+            Cache.userAuthorityCache.get(serviceName).get(tenantId).clear();
+        }
     }
 }

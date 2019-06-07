@@ -5,6 +5,70 @@
 <mapper
         namespace="com.cfl.mapper.CflObjectMapper">
 
+    <select id="selectTenantObjects" resultType="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
+
+    <select id="selectServiceObjects" resultType="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{serviceName}
+    </select>
+
+    <select id="selectAllObjects" resultType="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+    </select>
+
+    <select id="selectObject" resultType="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{object.serviceName}
+            AND tnnt_id = #{object.tenantId}
+            AND objt_id = #{object.objectId}
+    </select>
+
+    <insert id="insertObject" useGeneratedKeys="true" keyProperty="objectSequence">
+        INSERT INTO
+            cfl_object (objt_id, objt_nm, tnnt_id, svc_nm)
+        VALUE
+            (#{object.objectId}
+            , #{object.objectName}
+            , #{object.tenantId}
+            , #{object.serviceName})
+    </insert>
+
+    <update id="updateObject">
+        UPDATE
+            cfl_object
+        SET
+            objt_id = #{object.objectId}
+            , tnnt_id = #{object.tenantId}
+            , objt_nm = #{object.objectName}
+            , svc_nm = #{object.serviceName})
+        WHERE
+            objt_seq = #{object.objectSequence}
+    </update>
+
+    <delete id="deleteObject">
+        DELETE FROM
+            cfl_object
+        WHERE
+            objt_seq = #{object.objectSequence}
+    </delete>
 
 </mapper>
-

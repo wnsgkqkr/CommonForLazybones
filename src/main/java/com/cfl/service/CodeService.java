@@ -13,13 +13,19 @@ public class CodeService implements CflService<Code>{
 
     // insert / update / delete / select code from database
     public Code createData(JSONObject requestObject){
-        return codeMapper.insertCode(setCode(requestObject));
+        Code code = setCode(requestObject);
+        codeMapper.insertCode(code);
+        return code;
     }
     public Code modifyData(JSONObject requestObject){
-        return codeMapper.updateCode(setCode(requestObject));
+        Code code = setCode(requestObject);
+        codeMapper.updateCode(code);
+        return code;
     }
     public Code removeData(JSONObject requestObject){
-        return codeMapper.deleteCode(setCode(requestObject));
+        Code code = setCode(requestObject);
+        codeMapper.deleteCode(code);
+        return code;
     }
     public Code getData(JSONObject requestObject){
         return codeMapper.selectCode(setCode(requestObject));

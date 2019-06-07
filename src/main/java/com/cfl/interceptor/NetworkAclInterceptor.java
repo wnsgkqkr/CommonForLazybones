@@ -19,7 +19,6 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
         if(networkAclService.isAllowedServer(request.getRemoteAddr())){
             return true;
         }
-        log.info(request.getRemoteAddr()+" is Not allowed server");
         return false;
     }
 }

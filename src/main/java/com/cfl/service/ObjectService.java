@@ -63,24 +63,27 @@ public class ObjectService implements CflService<CflObject>{
                         Set<String> objectKeySet = objectIdMap.keySet();
                         Iterator<String> objectKeyIterator = objectKeySet.iterator();
 
-                        Map<String, List<String>> objectIdSubObjectIdListMap = cflObjectMapper.selectObjectIdSubObjectIdListMap(serviceName, tenantId);
-                        Map<String, List<String>> objectIdAuthorityIdListMap = mappingMapper.getObjectIdAuthorityIdListMap(serviceName, tenantId);
+                        Map<String, List<String>> objectIdSubObjectIdListMap = mappingMapper.selectObjectIdSubObjectIdListMap(serviceName, tenantId);
+                        Map<String, List<String>> objectIdAuthorityIdListMap = mappingMapper.selectObjectIdAuthorityIdListMap(serviceName, tenantId);
                         //into object map
                         while(objectKeyIterator.hasNext()){
                             String objectId = objectKeyIterator.next();
                             CflObject object = objectIdMap.get(objectId);
                             if (object != null) {
                                 //add subobjects
-                                List<String> subObjectIdList = objectIdSubObjectIdListMap.get(objectId);
-                                Map<String, CflObject> subObjectMap = object.getSubObjects();
-                                for(String subObjectId : subObjectIdList){
-                                    subObjectMap.put(subObjectId, objectMap.get(serviceName).get(tenantId).get(subObjectId));
+                                if(objectIdSubObjectIdListMap != null) {
+                                    List<String> subObjectIdList = objectIdSubObjectIdListMap.get(objectId);
+                                    Map<String, CflObject> subObjectMap = new HashMap<>();
+                                    for (String subObjectId : subObjectIdList) {
+                                        subObjectMap.put(subObjectId, objectMap.get(serviceName).get(tenantId).get(subObjectId));
+                                    }
+                                    object.setSubObjects(subObjectMap);
                                 }
-                                object.setSubObjects(subObjectMap);
-
                                 //add authorities
-                                List<String> authorityIdList = objectIdAuthorityIdListMap.get(objectId);
-                                object.setAuthorityIds(authorityIdList);
+                                if(objectIdAuthorityIdListMap != null){
+                                    List<String> authorityIdList = objectIdAuthorityIdListMap.get(objectId);
+                                    object.setAuthorityIds(authorityIdList);
+                                }
                             }
                         }
                     }
@@ -111,19 +114,19 @@ public class ObjectService implements CflService<CflObject>{
     //object insert / update / delete Database and refresh cache
     public CflObject createData(JSONObject request){
         CflObject object = setObject(request);
-        cflObjectMapper.insertCflObject(object);
+        cflObjectMapper.insertObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
     public CflObject modifyData(JSONObject request){
         CflObject object = setObject(request);
-        cflObjectMapper.updateCflObject(object);
+        cflObjectMapper.updateObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
     public CflObject removeData(JSONObject request){
         CflObject object = setObject(request);
-        cflObjectMapper.deleteCflObject(object);
+        cflObjectMapper.deleteObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
@@ -133,26 +136,26 @@ public class ObjectService implements CflService<CflObject>{
         CflObject object = setObject(request);
         object = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).get(object.getObjectId());
         if(object == null){
-            object = cflObjectMapper.selectCflObject(object);
+            object = cflObjectMapper.selectObject(object);
             Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).put(object.getObjectId(),object);
         }
         return object;
     }
 
     //mapping information insert / delete Database and refresh cache
-    public List<Authority> createObjectAuthority(JSONObject request){
+    public JSONObject createObjectAuthority(JSONObject request){
         CflObject object = setObject(request);
         Authority authority = commonService.setAuthority(request);
-        List<Authority> authorityList = mappingMapper.insertObjectAuthority(object, authority);
+        mappingMapper.insertObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        return authorityList;
+        return request;
     }
-    public List<Authority> removeObjectAuthority(JSONObject request){
+    public JSONObject removeObjectAuthority(JSONObject request){
         CflObject object = setObject(request);
         Authority authority = commonService.setAuthority(request);
-        List<Authority> authorityList = mappingMapper.deleteObjectAuthority(object, authority);
+        mappingMapper.deleteObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        return authorityList;
+        return request;
     }
     //get AuthorityIds in Object from cache
     public List<String> getObjectAuthorityIds(JSONObject request){
@@ -160,7 +163,7 @@ public class ObjectService implements CflService<CflObject>{
         List<String> authorityIdList = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).
                 get(object.getObjectId()).getAuthorityIds();
         if(authorityIdList == null){
-            authorityIdList = mappingMapper.getObjectAuthorityIds(object);
+            authorityIdList = mappingMapper.selectObjectAuthorityIds(object);
             Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).
                     get(object.getObjectId()).setAuthorityIds(authorityIdList);
         }
