@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Controller
@@ -19,6 +18,7 @@ public class ObjectController {
     @Autowired
     private CommonService commonService;
 
+    //add, remove, get Authorities to Object
     @PostMapping(value="/object/authority")
     public JSONObject insertObjectAuthority(@RequestBody JSONObject requestObject){
         try {
@@ -38,17 +38,18 @@ public class ObjectController {
         }
     }
     @GetMapping(value="/object/authority")
-    public JSONObject getObjectAuthority(@RequestBody JSONObject requestObject){
+    public JSONObject getObjectAuthorityIds(@RequestBody JSONObject requestObject){
         try {
-            List<String> authorityList = objectService.getObjectAuthorityIds(requestObject);
-            return commonService.successResult(commonService.toJson(authorityList));
+            List<String> authorityIdList = objectService.getObjectAuthorityIds(requestObject);
+            return commonService.successResult(commonService.toJson(authorityIdList));
         } catch (Exception e){
             return commonService.failResult(commonService.toJson(e));
         }
     }
 
+    //add, remove, get Object
     @PostMapping(value="/object")
-    public JSONObject insertObject(@RequestBody JSONObject requestObject){
+    public JSONObject createObject(@RequestBody JSONObject requestObject){
         try {
             CflObject object = objectService.createData(requestObject);
             return commonService.successResult(commonService.toJson(object));
@@ -57,7 +58,7 @@ public class ObjectController {
         }
     }
     @PutMapping(value="/object")
-    public JSONObject updateObject(@RequestBody JSONObject requestObject){
+    public JSONObject modifyObject(@RequestBody JSONObject requestObject){
         try {
             CflObject object = objectService.modifyData(requestObject);
             return commonService.successResult(commonService.toJson(object));
@@ -66,7 +67,7 @@ public class ObjectController {
         }
     }
     @DeleteMapping(value="/object")
-    public JSONObject deleteObject(@RequestBody JSONObject requestObject){
+    public JSONObject removeObject(@RequestBody JSONObject requestObject){
         try {
             CflObject object = objectService.removeData(requestObject);
             return commonService.successResult(commonService.toJson(object));

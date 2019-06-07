@@ -4,7 +4,6 @@ import com.cfl.cache.Cache;
 import com.cfl.customexception.GetHttpStatusException;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
-import com.cfl.mapper.AuthorityMapper;
 import com.cfl.mapper.MappingMapper;
 import com.cfl.mapper.UserMapper;
 import com.google.gson.Gson;
@@ -18,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -60,18 +57,20 @@ public class CommonService {
         }
     }
     //user-authority insert / delete Database and clear cache
-    public void createUserAuthority(JSONObject requestObject){
+    public JSONObject createUserAuthority(JSONObject requestObject){
         User user = setUser(requestObject);
         userMapper.insertUser(user);
         Authority authority = setAuthority(requestObject);
         mappingMapper.insertUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
+        return requestObject;
     }
-    public void removeUserAuthority(JSONObject requestObject){
+    public JSONObject removeUserAuthority(JSONObject requestObject){
         User user = setUser(requestObject);
         Authority authority = setAuthority(requestObject);
         mappingMapper.deleteUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
+        return requestObject;
     }
 
     //JSON request to Authority Object

@@ -1,6 +1,7 @@
 package com.cfl.controller;
 
 import com.cfl.domain.Authority;
+import com.cfl.domain.User;
 import com.cfl.service.AuthorityService;
 import com.cfl.service.CommonService;
 import org.json.JSONObject;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Controller
@@ -20,62 +20,75 @@ public class AuthorityController {
 
     //add, remove, get users to authority
     @PostMapping(value="/authority/user")
-    public JSONObject insertAuthorityUser(@RequestBody JSONObject requestObject){
+    public JSONObject createAuthorityUser(@RequestBody JSONObject requestObject){
         try{
-            commonService.insertUserAuthority(requestObject);
-            return commonService.successResult(new JSONObject());
+            return commonService.successResult(commonService.createUserAuthority(requestObject));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
         }
     }
     @DeleteMapping(value="/authority/user")
-    public JSONObject deleteAuthorityUser(@RequestBody JSONObject requestObject){
+    public JSONObject removeAuthorityUser(@RequestBody JSONObject requestObject){
         try{
-            commonService.deleteUserAuthority(requestObject);
-            return commonService.successResult(new JSONObject());
+            return commonService.successResult(commonService.removeUserAuthority(requestObject));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
         }
     }
     @GetMapping(value="/authority/user")
-    public JSONObject getAuthorityUser(@RequestBody JSONObject requestObject){
-        return authorityService.getAuthorityUser(requestObject);
+    public JSONObject getAuthorityUsers(@RequestBody JSONObject requestObject){
+        try{
+            List<User> userList = authorityService.getAuthorityUsers(requestObject);
+            return commonService.successResult(commonService.toJson(userList));
+        } catch (Exception e){
+            return commonService.failResult(commonService.toJson(e));
+        }
     }
 
     //add, update, remove, get authority
     @PostMapping(value="/authority")
-    public JSONObject insertAuthority(@RequestBody JSONObject requestObject){
+    public JSONObject createAuthority(@RequestBody JSONObject requestObject){
         try{
-            authorityService.insertAuthority(requestObject);
-            return commonService.successResult(new JSONObject());
+            Authority authority = authorityService.createData(requestObject);
+            return commonService.successResult(commonService.toJson(authority));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
         }
     }
     @PutMapping(value="/authority")
-    public JSONObject updateAuthority(@RequestBody JSONObject requestObject){
+    public JSONObject modifyAuthority(@RequestBody JSONObject requestObject){
         try{
-            authorityService.updateAuthority(requestObject);
-            return commonService.successResult(new JSONObject());
+            Authority authority = authorityService.modifyData(requestObject);
+            return commonService.successResult(commonService.toJson(authority));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
         }
     }
     @DeleteMapping(value="/authority")
-    public JSONObject deleteAuthority(@RequestBody JSONObject requestObject){
+    public JSONObject removeAuthority(@RequestBody JSONObject requestObject){
         try{
-            authorityService.deleteAuthority(requestObject);
-            return commonService.successResult(new JSONObject());
+            Authority authority = authorityService.removeData(requestObject);
+            return commonService.successResult(commonService.toJson(authority));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
         }
     }
     @GetMapping(value="/authority")
     public JSONObject getAuthority(@RequestBody JSONObject requestObject){
         try{
-            return commonService.successResult(authorityService.getAuthorities(requestObject));
+            Authority authority = authorityService.getData(requestObject);
+            return commonService.successResult(commonService.toJson(authority));
         } catch (Exception e){
-            return commonService.failResult(new JSONObject());
+            return commonService.failResult(commonService.toJson(e));
+        }
+    }
+    @GetMapping(value="/authorities")
+    public JSONObject getAuthorities(@RequestBody JSONObject requestObject){
+        try{
+            List<Authority> authorityList = authorityService.getTenantAuthorities(requestObject);
+            return commonService.successResult(commonService.toJson(authorityList));
+        } catch (Exception e){
+            return commonService.failResult(commonService.toJson(e));
         }
     }
 }

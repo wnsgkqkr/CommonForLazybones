@@ -5,7 +5,6 @@ import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
 import com.cfl.mapper.CflObjectMapper;
 import com.cfl.mapper.MappingMapper;
-import org.apache.ibatis.javassist.runtime.Cflow;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,21 +93,20 @@ public class ObjectService implements CflService<CflObject>{
     public Map<String, Map<String, Map<String, CflObject>>> refreshCache(String serviceName, String tenantId){
         List<CflObject> objectList = cflObjectMapper.selectTenantObjects(serviceName,tenantId);
         Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjects(objectList);
-        temporaryCache = addSubObjectsAndAuthorities(temporaryCache);
-        Cache.objectAuthorityCache = temporaryCache;
-        return temporaryCache;
+        Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryCache);
+        return Cache.objectAuthorityCache;
     }
     public Map<String, Map<String, Map<String, CflObject>>> refreshCache(String serviceName){
         List<CflObject> objectList = cflObjectMapper.selectServiceObjects(serviceName);
         Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjects(objectList);
-        temporaryCache = addSubObjectsAndAuthorities(temporaryCache);
-        return temporaryCache;
+        Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryCache);
+        return Cache.objectAuthorityCache;
     }
     public Map<String, Map<String, Map<String, CflObject>>> createCache(){
         List<CflObject> objectList = cflObjectMapper.selectAllObjects();
         Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjects(objectList);
-        temporaryCache = addSubObjectsAndAuthorities(temporaryCache);
-        return temporaryCache;
+        Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryCache);
+        return Cache.objectAuthorityCache;
     }
     //object insert / update / delete Database and refresh cache
     public CflObject createData(JSONObject request){
