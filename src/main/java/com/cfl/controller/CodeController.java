@@ -16,8 +16,8 @@ public class CodeController {
     private CommonService commonService;
 
     //Code create, modify, remove, get
-    @RequestMapping(value = "/network-acl")
-    public JSONObject createNetworkAcl(@RequestBody JSONObject requestObject) {
+    @RequestMapping(value = "/code")
+    public JSONObject createCode(@RequestBody JSONObject requestObject) {
         try {
             Code code = codeService.createData(requestObject);
             return commonService.successResult(commonService.toJson(code));
@@ -26,8 +26,8 @@ public class CodeController {
         }
     }
 
-    @PutMapping(value = "/network-acl")
-    public JSONObject modifyNetworkAcl(@RequestBody JSONObject requestObject) {
+    @PutMapping(value = "/code")
+    public JSONObject modifyCode(@RequestBody JSONObject requestObject) {
         try {
             Code code = codeService.modifyData(requestObject);
             return commonService.successResult(commonService.toJson(code));
@@ -36,8 +36,8 @@ public class CodeController {
         }
     }
 
-    @DeleteMapping(value = "/network-acl")
-    public JSONObject removeNetworkAcl(@RequestBody JSONObject requestObject) {
+    @DeleteMapping(value = "/code")
+    public JSONObject removeCode(@RequestBody JSONObject requestObject) {
         try {
             Code code = codeService.removeData(requestObject);
             return commonService.successResult(commonService.toJson(code));
@@ -46,8 +46,8 @@ public class CodeController {
         }
     }
 
-    @GetMapping(value = "/network-acl")
-    public JSONObject getNetworkAcl(@RequestBody JSONObject requestObject) {
+    @GetMapping(value = "/code")
+    public JSONObject getCode(@RequestBody JSONObject requestObject) {
         try {
             Code code = codeService.getData(requestObject);
             return commonService.successResult(commonService.toJson(code));
