@@ -51,7 +51,7 @@
             cfl_code
         WHERE
             cd_id = #{codeId}
-            AND svc_name = #{serviceName}
+            AND svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}
     </delete>
 

@@ -42,7 +42,7 @@
             cfl_user
         WHERE
             user_id = #{userId}
-            AND svc_name = #{serviceName}
+            AND svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}
     </delete>
 </mapper>
