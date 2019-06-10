@@ -70,9 +70,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            ob.svc_nm = #{object.serviceName}
-	        AND ob.tnnt_id = #{object.tenantId}
-	        AND ob.objt_id = #{object.objectId}
+            ob.svc_nm = #{serviceName}
+	        AND ob.tnnt_id = #{tenantId}
+	        AND ob.objt_id = #{objectId}
     </select>
 
     <select id="selectUserAuthorities" resultType="Authority">
@@ -89,9 +89,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            user.svc_nm = #{user.serviceName}
-	        AND user.tnnt_id = #{user.tenantId}
-	        AND user.user_id = #{user.userId}
+            user.svc_nm = #{serviceName}
+	        AND user.tnnt_id = #{tenantId}
+	        AND user.user_id = #{userId}
     </select>
 
     <select id="selectAuthorityUsers" resultType="User">
@@ -108,9 +108,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            auth.svc_nm = #{authority.serviceName}
-	        AND auth.tnnt_id = #{authority.tenantId}
-	        AND auth.auth_id = #{authority.authorityId}
+            auth.svc_nm = #{serviceName}
+	        AND auth.tnnt_id = #{tenantId}
+	        AND auth.auth_id = #{authorityId}
     </select>
 
     <select id="selectObjectIdAuthorityIdListMap" resultType="Map">

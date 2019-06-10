@@ -11,8 +11,8 @@
         FROM
             cfl_authority
         WHERE
-            svc_nm = #{authority.serviceName}
-            AND tnnt_id = #{authority.tenantId}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </select>
 
     <select id="selectAuthority" resultType="Authority">
@@ -21,40 +21,40 @@
         FROM
             cfl_authority
         WHERE
-            svc_nm = #{authority.serviceName}
-            AND tnnt_id = #{authority.tenantId}
-            AND auth_id = #{authority.authorityId}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND auth_id = #{authorityId}
     </select>
 
     <insert id="insertAuthority">
         INSERT INTO
             cfl_authority (auth_id, auth_nm, auth_type, tnnt_id, svc_nm)
         VALUE
-            (#{authority.authorityId}
-            , #{authority.authorityName}
-            , #{authority.authorityType}
-            , #{authority.tenantId}
-            , #{authority.serviceName})
+            (#{authorityId}
+            , #{authorityName}
+            , #{authorityType}
+            , #{tenantId}
+            , #{serviceName})
     </insert>
 
     <update id="updateAuthority">
         UPDATE
             cfl_authority
         SET
-            auth_id = #{authority.authorityId}
-            , tnnt_id = #{authority.tenantId}
-            , auth_nm = #{authority.authorityName}
-            , svc_nm = #{authority.serviceName})
-            , auth_type = #{authority.authorityType}
+            auth_id = #{authorityId}
+            , tnnt_id = #{tenantId}
+            , auth_nm = #{authorityName}
+            , svc_nm = #{serviceName})
+            , auth_type = #{authorityType}
         WHERE
-            auth_seq = #{authority.authoritySequence}
+            auth_seq = #{authoritySequence}
     </update>
 
     <delete id="deleteAuthority">
         DELETE FROM
             cfl_authority
         WHERE
-            auth_seq = #{authority.authoritySequence}
+            auth_seq = #{authoritySequence}
     </delete>
 
 </mapper>

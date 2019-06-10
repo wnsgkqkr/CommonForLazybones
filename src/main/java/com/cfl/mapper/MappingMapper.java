@@ -4,16 +4,17 @@ import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
 import com.cfl.domain.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 public interface MappingMapper {
-    void insertUserAuthority(User user, Authority authority);
-    void deleteUserAuthority(User user, Authority authority);
-    void insertObjectAuthority(CflObject object, Authority authority);
-    void deleteObjectAuthority(CflObject object, Authority authority);
+    void insertUserAuthority(@Param("user")User user, @Param("authority")Authority authority);
+    void deleteUserAuthority(@Param("user")User user, @Param("authority")Authority authority);
+    void insertObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
+    void deleteObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
 
     List<String> selectObjectAuthorityIds(CflObject object);
     List<Authority> selectUserAuthorities(User user);

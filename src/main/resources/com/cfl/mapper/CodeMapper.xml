@@ -11,48 +11,48 @@
         FROM
             cfl_code
         WHERE
-            cd_id = #{code.codeId}
-            AND svc_nm = #{code.serviceName}
-            AND tnnt_id = #{code.tenantId}
+            cd_id = #{codeId}
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </select>
 
     <insert id="insertCode">
         INSERT INTO
             cfl_code (cd_id, mlngcd, prnt_cd_id, tnnt_id, cd_desc, use_yn, sort_ord, cd_nm, svc_nm)
         VALUE
-            (#{code.codeId}
-            , #{code.multiLanguageCode}
-            , #{code.parentCodeId}
-            , #{code.tenantId}
-            , #{code.codeDescription}
-            , #{code.isUsed}
-            , #{code.sortOrder}
-            , #{code.codeName}
-            , #{code.serviceName})
+            (#{codeId}
+            , #{multiLanguageCode}
+            , #{parentCodeId}
+            , #{tenantId}
+            , #{codeDescription}
+            , #{isUsed}
+            , #{sortOrder}
+            , #{codeName}
+            , #{serviceName})
     </insert>
 
     <update id="updateCode">
         UPDATE
             cfl_code
         SET
-            cd_id = #{code.codeId}
-            , mlng_cd = #{code.multiLanguageCode}
-            , prnt_cd_id = #{code.parentCodeId}
-            , tnnt_id = #{code.tenantId}
-            , cd_desc = #{code.codeDescription}
-            , use_yn = #{code.isUsed}
-            , sort_ord = #{code.sortOrder}
-            , cd_nm = #{code.codeName}
-            , svc_nm = #{code.serviceName}
+            cd_id = #{codeId}
+            , mlng_cd = #{multiLanguageCode}
+            , prnt_cd_id = #{parentCodeId}
+            , tnnt_id = #{tenantId}
+            , cd_desc = #{codeDescription}
+            , use_yn = #{isUsed}
+            , sort_ord = #{sortOrder}
+            , cd_nm = #{codeName}
+            , svc_nm = #{serviceName}
     </update>
 
     <delete id="deleteCode">
         DELETE FROM
             cfl_code
         WHERE
-            cd_id = #{code.codeId}
-            AND svc_name = #{code.serviceName}
-            AND tnnt_id = #{code.tenantId}
+            cd_id = #{codeId}
+            AND svc_name = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </delete>
 
 </mapper>

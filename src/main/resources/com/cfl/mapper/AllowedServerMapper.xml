@@ -27,29 +27,29 @@
         FROM
             cfl_allowed_server
         WHERE 
-            svc_nm = #{allowedServer.serviceName}
-            AND tnnt_id = #{allowedServer.tenantId}
-            AND svr_ip = #{allowedServer.serverIp}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND svr_ip = #{serverIp}
     </select>
 
     <insert id="insertAllowedServer">
         INSERT INTO
             cfl_allowed_server (svr_ip, tnnt_id, svr_nm, svc_nm)
         VALUE
-            (#{allowedServer.serverIp}
-            , #{allowedServer.tenantId}
-            , #{allowedServer.serverName}
-            , #{allowedServer.serviceName})
+            (#{serverIp}
+            , #{tenantId}
+            , #{serverName}
+            , #{serviceName})
     </insert>
 
     <update id="updateAllowedServer">
         UPDATE
             cfl_allowed_server
         SET
-            svr_ip = #{allowedServer.serverIp}
-            , tnnt_id = #{allowedServer.tenantId}
-            , svr_nm = #{allowedServer.serverName}
-            , svc_nm = #{allowedServer.serviceName}
+            svr_ip = #{serverIp}
+            , tnnt_id = #{tenantId}
+            , svr_nm = #{serverName}
+            , svc_nm = #{serviceName}
         WHERE
             svr_ip = #{originalIp}
     </update>
@@ -58,7 +58,7 @@
         DELETE FROM
             cfl_allowed_server
         WHERE
-            svr_ip = #{allowedServer.serverIp}
+            svr_ip = #{serverIp}
     </delete>
 
     <select id="selectRegExpServerList" resultMap="AllowedServer">

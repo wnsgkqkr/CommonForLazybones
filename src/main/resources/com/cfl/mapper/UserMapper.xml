@@ -10,7 +10,7 @@
         FROM
             cfl_user
         WHERE
-            user_id = #{user.userId}
+            user_id = #{userId}
             AND svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}
     </select>
@@ -30,20 +30,20 @@
         UPDATE
             cfl_user
         SET
-            user_id = #{user.userId}
-            , user_type = #{user.userType}
-            , tnnt_id = #{user.tenantId}
-            , user_seq = #{user.userSequence}
-            , svc_nm = #{user.serviceName}
+            user_id = #{userId}
+            , user_type = #{userType}
+            , tnnt_id = #{tenantId}
+            , user_seq = #{userSequence}
+            , svc_nm = #{serviceName}
     </update>
 
     <delete id="deleteUser">
         DELETE FROM
             cfl_user
         WHERE
-            user_id = #{user.userId}
-            AND svc_name = #{user.serviceName}
-            AND tnnt_id = #{user.tenantId}
+            user_id = #{userId}
+            AND svc_name = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </delete>
 </mapper>
 
