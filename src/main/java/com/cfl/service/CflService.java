@@ -1,13 +1,11 @@
 package com.cfl.service;
 
-import org.json.JSONObject;
 
-import java.util.List;
-import java.util.Map;
+import com.cfl.domain.ApiRequest;
 
 public interface CflService<T> {
-    T createData(JSONObject jsonObject);
-    T modifyData(JSONObject jsonObject);
-    T removeData(JSONObject jsonObject);
-    T getData(JSONObject jsonObject);
+    T createData(ApiRequest request);
+    T modifyData(ApiRequest request);
+    T removeData(ApiRequest request);
+    T getData(ApiRequest request);
 }

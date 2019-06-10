@@ -1,13 +1,12 @@
 package com.cfl.service;
 
 import com.cfl.domain.AllowedServer;
+import com.cfl.domain.ApiRequest;
 import com.cfl.mapper.AllowedServerMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,32 +33,30 @@ public class NetworkAclService implements CflService<AllowedServer>{
         return false;
     }
     // insert / update / delete / select allowedServer from database
-    public AllowedServer createData(JSONObject requestObject){
+    public AllowedServer createData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.insertAllowedServer(allowedServer);
         return allowedServer;
     }
-    public AllowedServer modifyData(JSONObject requestObject){
-        String originalIp = (String)requestObject.get("originalKey");
+    public AllowedServer modifyData(ApiRequest requestObject){
+        String originalIp = requestObject.getOriginalIp();
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.updateAllowedServer(allowedServer, originalIp);
         return allowedServer;
     }
-    public AllowedServer removeData(JSONObject requestObject){
+    public AllowedServer removeData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.deleteAllowedServer(allowedServer);
         return allowedServer;
     }
-    public AllowedServer getData(JSONObject requestObject){
+    public AllowedServer getData(ApiRequest requestObject){
         return allowedServerMapper.selectAllowedServer(setAllowedServer(requestObject));
     }
     //JSON request to AllowedServer Object
-    public AllowedServer setAllowedServer(JSONObject requestObject){
-        AllowedServer allowedServer = new AllowedServer();
-        allowedServer.setServerIp((String)requestObject.getJSONObject("allowedServer").get("serverIp"));
-        allowedServer.setServerName((String)requestObject.getJSONObject("allowedServer").get("serverName"));
-        allowedServer.setServiceName((String)requestObject.get("serviceName"));
-        allowedServer.setTenantId((String)requestObject.get("tenantId"));
+    public AllowedServer setAllowedServer(ApiRequest requestObject){
+        AllowedServer allowedServer = requestObject.getAllowedServer();
+        allowedServer.setServiceName(requestObject.getServiceName());
+        allowedServer.setTenantId(requestObject.getTenantId());
 
         return allowedServer;
     }

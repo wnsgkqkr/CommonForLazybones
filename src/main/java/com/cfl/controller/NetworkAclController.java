@@ -1,14 +1,15 @@
 package com.cfl.controller;
 
 import com.cfl.domain.AllowedServer;
+import com.cfl.domain.ApiRequest;
 import com.cfl.service.CommonService;
 import com.cfl.service.NetworkAclService;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.Map;
+
+@RestController
 public class NetworkAclController {
     @Autowired
     private NetworkAclService networkAclService;
@@ -17,39 +18,39 @@ public class NetworkAclController {
 
     //network ACL create, modify, remove, get
     @RequestMapping(value="/network-acl")
-    public JSONObject createNetworkAcl(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> createNetworkAcl(@RequestBody ApiRequest requestObject) {
         try{
             AllowedServer allowedServer = networkAclService.createData(requestObject);
             return commonService.successResult(commonService.toJson(allowedServer));
         } catch (Exception e){
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
     @PutMapping(value="/network-acl")
-    public JSONObject modifyNetworkAcl(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> modifyNetworkAcl(@RequestBody ApiRequest requestObject) {
         try{
             AllowedServer allowedServer = networkAclService.modifyData(requestObject);
             return commonService.successResult(commonService.toJson(allowedServer));
         } catch (Exception e){
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
     @DeleteMapping(value="/network-acl")
-    public JSONObject removeNetworkAcl(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> removeNetworkAcl(@RequestBody ApiRequest requestObject) {
         try{
             AllowedServer allowedServer = networkAclService.removeData(requestObject);
             return commonService.successResult(commonService.toJson(allowedServer));
         } catch (Exception e){
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
     @GetMapping(value="/network-acl")
-    public JSONObject getNetworkAcl(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> getNetworkAcl(@RequestBody ApiRequest requestObject) {
         try{
             AllowedServer allowedServer = networkAclService.getData(requestObject);
             return commonService.successResult(commonService.toJson(allowedServer));
         } catch (Exception e){
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
 }

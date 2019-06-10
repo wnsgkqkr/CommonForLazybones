@@ -1,14 +1,15 @@
 package com.cfl.controller;
 
+import com.cfl.domain.ApiRequest;
 import com.cfl.domain.Code;
 import com.cfl.service.CodeService;
 import com.cfl.service.CommonService;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.Map;
+
+@RestController
 public class CodeController {
     @Autowired
     private CodeService codeService;
@@ -17,42 +18,42 @@ public class CodeController {
 
     //Code create, modify, remove, get
     @RequestMapping(value = "/code")
-    public JSONObject createCode(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> createCode(@RequestBody ApiRequest requestObject) {
         try {
             Code code = codeService.createData(requestObject);
             return commonService.successResult(commonService.toJson(code));
         } catch (Exception e) {
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
 
     @PutMapping(value = "/code")
-    public JSONObject modifyCode(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> modifyCode(@RequestBody ApiRequest requestObject) {
         try {
             Code code = codeService.modifyData(requestObject);
             return commonService.successResult(commonService.toJson(code));
         } catch (Exception e) {
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
 
     @DeleteMapping(value = "/code")
-    public JSONObject removeCode(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> removeCode(@RequestBody ApiRequest requestObject) {
         try {
             Code code = codeService.removeData(requestObject);
             return commonService.successResult(commonService.toJson(code));
         } catch (Exception e) {
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
 
     @GetMapping(value = "/code")
-    public JSONObject getCode(@RequestBody JSONObject requestObject) {
+    public Map<String, Object> getCode(@RequestBody ApiRequest requestObject) {
         try {
             Code code = codeService.getData(requestObject);
             return commonService.successResult(commonService.toJson(code));
         } catch (Exception e) {
-            return commonService.failResult(commonService.toJson(e));
+            return commonService.failResult(e);
         }
     }
 }

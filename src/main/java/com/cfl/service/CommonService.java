@@ -1,22 +1,20 @@
 package com.cfl.service;
 
 import com.cfl.cache.Cache;
-import com.cfl.customexception.GetHttpStatusException;
+import com.cfl.domain.ApiRequest;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.mapper.MappingMapper;
 import com.cfl.mapper.UserMapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -27,37 +25,25 @@ public class CommonService {
     private MappingMapper mappingMapper;
 
     //set response API = isSuccess(Boolean), resultCode(int), resultMessage(String)
-    public JSONObject successResult(JSONObject jsonObject){
-        jsonObject = getHttpResponseProperty(jsonObject);
-        jsonObject.put("isSuccess", true);
+    public Map<String,Object> successResult(JSONObject jsonObject){
+        Map<String,Object> returnMap = new HashMap<>();
+        returnMap.put("isSuccess", true);
+        returnMap.put("resultCode", HttpStatus.SC_OK);
+        returnMap.put("resultMessage", jsonObject.toString());
 
-        log.info("result = "+jsonObject.toString());
-        return jsonObject;
+        return returnMap;
     }
-    public JSONObject failResult(JSONObject jsonObject){
-        jsonObject = getHttpResponseProperty(jsonObject);
-        jsonObject.put("isSuccess", false);
+    public Map<String,Object> failResult(Exception e){
+        Map<String,Object> returnMap = new HashMap<>();
+        returnMap.put("isSuccess", false);
+        returnMap.put("resultCode", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        returnMap.put("resultMessage", e.getMessage());
 
-        log.info("result = "+jsonObject.toString());
-        return jsonObject;
+        return returnMap;
     }
 
-    private JSONObject getHttpResponseProperty(JSONObject jsonObject) {
-        HttpClient client = HttpClientBuilder.create().build();
-        try{
-            HttpResponse httpResponse = client.execute(new HttpGet());
-
-            jsonObject.put("resultCode", httpResponse.getStatusLine().getStatusCode());
-            jsonObject.put("resultMessage", httpResponse.getStatusLine().getReasonPhrase());
-
-            return jsonObject;
-        } catch (IOException e){
-            e.printStackTrace();
-            throw new GetHttpStatusException(e);
-        }
-    }
     //user-authority insert / delete Database and clear cache
-    public JSONObject createUserAuthority(JSONObject requestObject){
+    public ApiRequest createUserAuthority(ApiRequest requestObject){
         User user = setUser(requestObject);
         userMapper.insertUser(user);
         Authority authority = setAuthority(requestObject);
@@ -65,7 +51,7 @@ public class CommonService {
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
         return requestObject;
     }
-    public JSONObject removeUserAuthority(JSONObject requestObject){
+    public ApiRequest removeUserAuthority(ApiRequest requestObject){
         User user = setUser(requestObject);
         Authority authority = setAuthority(requestObject);
         mappingMapper.deleteUserAuthority(user, authority);
@@ -74,26 +60,19 @@ public class CommonService {
     }
 
     //JSON request to Authority Object
-    public Authority setAuthority(JSONObject requestObject){
-        Authority authority = new Authority();
-        authority.setAuthorityId((String)requestObject.getJSONObject("auth").get("authId"));
-        authority.setAuthorityName((String)requestObject.getJSONObject("auth").get("authName"));
-        authority.setAuthorityType((String)requestObject.getJSONObject("auth").get("authType"));
-        authority.setAuthoritySequence((String)requestObject.getJSONObject("auth").get("authSeq"));
-        authority.setServiceName((String)requestObject.get("serviceName"));
-        authority.setTenantId((String)requestObject.get("tenantId"));
+    public Authority setAuthority(ApiRequest requestObject){
+        Authority authority = requestObject.getAuthority();
+        authority.setServiceName(requestObject.getServiceName());
+        authority.setTenantId(requestObject.getTenantId());
 
         return authority;
     }
 
     //JSON request to User Object
-    public User setUser(JSONObject requestObject){
-        User user = new User();
-        user.setUserId((String)requestObject.getJSONObject("user").get("userId"));
-        user.setUserType((String)requestObject.getJSONObject("user").get("userType"));
-        user.setUserSequence((String)requestObject.getJSONObject("user").get("userSeq"));
-        user.setServiceName((String)requestObject.get("serviceName"));
-        user.setTenantId((String)requestObject.get("tenantId"));
+    public User setUser(ApiRequest requestObject){
+        User user = requestObject.getUser();
+        user.setServiceName(requestObject.getServiceName());
+        user.setTenantId(requestObject.getTenantId());
 
         return user;
     }
@@ -113,18 +92,30 @@ public class CommonService {
     }
     public void clearUserAuthorityServiceCache(String serviceName){
         synchronized (Cache.authorityUserCache) {
-            Cache.authorityUserCache.get(serviceName).clear();
+            if(Cache.authorityUserCache.get(serviceName)!=null) {
+                Cache.authorityUserCache.get(serviceName).clear();
+            }
         }
         synchronized (Cache.userAuthorityCache){
-            Cache.userAuthorityCache.get(serviceName).clear();
+            if(Cache.userAuthorityCache.get(serviceName)!=null) {
+                Cache.userAuthorityCache.get(serviceName).clear();
+            }
         }
     }
     public void clearUserAuthorityTenantCache(String serviceName,String tenantId){
         synchronized (Cache.authorityUserCache) {
-            Cache.authorityUserCache.get(serviceName).get(tenantId).clear();
+            if(Cache.authorityUserCache.get(serviceName)!=null){
+                if(Cache.authorityUserCache.get(serviceName).get(tenantId)!=null){
+                    Cache.authorityUserCache.get(serviceName).get(tenantId).clear();
+                }
+            }
         }
         synchronized (Cache.userAuthorityCache){
-            Cache.userAuthorityCache.get(serviceName).get(tenantId).clear();
+            if(Cache.userAuthorityCache.get(serviceName)!=null){
+                if(Cache.userAuthorityCache.get(serviceName).get(tenantId)!=null){
+                    Cache.userAuthorityCache.get(serviceName).get(tenantId).clear();
+                }
+            }
         }
     }
 }

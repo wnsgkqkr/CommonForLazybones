@@ -1,6 +1,7 @@
 package com.cfl.service;
 
 import com.cfl.cache.Cache;
+import com.cfl.domain.ApiRequest;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.mapper.MappingMapper;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class UserService implements CflService<User> {
+public class UserService{// implements CflService<User> {
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -24,26 +25,26 @@ public class UserService implements CflService<User> {
     private MappingMapper mappingMapper;
 
     //User insert / update / delete Database and refresh cache
-    public User createData(JSONObject requestObject){
+    public User createData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         userMapper.insertUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
         return user;
     }
-    public User modifyData(JSONObject requestObject){
+    public User modifyData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         userMapper.updateUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
         return user;
     }
-    public User removeData(JSONObject requestObject){
+    public User removeData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         userMapper.deleteUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
         return user;
     }
     //get User from cache or Database and put cache
-    public User getData(JSONObject requestObject){
+    public User getData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         Map<String, User> userMap = getUserMap(user);
         user = userMap.get(user.getUserId());
@@ -54,7 +55,7 @@ public class UserService implements CflService<User> {
         return user;
     }
     //get AuthorityList in User from cache or Database and put cache
-    public List<Authority> getUserAuthorities(JSONObject requestObject){
+    public List<Authority> getUserAuthorities(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         Map<String, User> userMap = getUserMap(user);
         user = userMap.get(user.getUserId());

@@ -4,7 +4,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper
         namespace="com.cfl.mapper.AllowedServerMapper">
-    <select id="selectAllowedServerByIpv4" resultType="AllowedServer">
+
+    <resultMap id="AllowedServer" type="AllowedServer">
+        <id property="serverIp" column="svr_ip" />
+        <result property="serverName" column="svr_nm"/>
+        <result property="serviceName" column="svc_nm"/>
+        <result property="tenantId" column="tnnt_id"/>
+    </resultMap>
+
+    <select id="selectAllowedServerByIpv4" resultMap="AllowedServer">
         SELECT
             *
         FROM
@@ -13,7 +21,7 @@
             svr_ip = #{ipv4Address}
     </select>
 
-    <select id="selectAllowedServer" resultType="AllowedServer">
+    <select id="selectAllowedServer" resultMap="AllowedServer">
         SELECT
             *
         FROM
@@ -21,7 +29,7 @@
         WHERE 
             svc_nm = #{allowedServer.serviceName}
             AND tnnt_id = #{allowedServer.tenantId}
-            AND svr_ip = #{allowedServer.ipv4Address}
+            AND svr_ip = #{allowedServer.serverIp}
     </select>
 
     <insert id="insertAllowedServer">
@@ -53,7 +61,7 @@
             svr_ip = #{allowedServer.serverIp}
     </delete>
 
-    <select id="selectRegExpServerList" resultType="AllowedServer">
+    <select id="selectRegExpServerList" resultMap="AllowedServer">
         SELECT
             *
         FROM

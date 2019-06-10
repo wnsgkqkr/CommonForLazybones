@@ -42,7 +42,7 @@
             AND objt_id = #{object.objectId}
     </select>
 
-    <insert id="insertObject" useGeneratedKeys="true" keyProperty="objectSequence">
+    <insert id="insertObject">
         INSERT INTO
             cfl_object (objt_id, objt_nm, tnnt_id, svc_nm)
         VALUE

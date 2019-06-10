@@ -1,14 +1,15 @@
 package com.cfl.service;
 
 import com.cfl.cache.Cache;
+import com.cfl.domain.ApiRequest;
 import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
 import com.cfl.mapper.CflObjectMapper;
 import com.cfl.mapper.MappingMapper;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
@@ -105,6 +106,8 @@ public class ObjectService implements CflService<CflObject>{
         Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryCache);
         return Cache.objectAuthorityCache;
     }
+
+    @PostConstruct
     public Map<String, Map<String, Map<String, CflObject>>> createCache(){
         List<CflObject> objectList = cflObjectMapper.selectAllObjects();
         Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjects(objectList);
@@ -112,26 +115,26 @@ public class ObjectService implements CflService<CflObject>{
         return Cache.objectAuthorityCache;
     }
     //object insert / update / delete Database and refresh cache
-    public CflObject createData(JSONObject request){
+    public CflObject createData(ApiRequest request){
         CflObject object = setObject(request);
         cflObjectMapper.insertObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
-    public CflObject modifyData(JSONObject request){
+    public CflObject modifyData(ApiRequest request){
         CflObject object = setObject(request);
         cflObjectMapper.updateObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
-    public CflObject removeData(JSONObject request){
+    public CflObject removeData(ApiRequest request){
         CflObject object = setObject(request);
         cflObjectMapper.deleteObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
         return object;
     }
     //get Object from cache
-    public CflObject getData(JSONObject request)
+    public CflObject getData(ApiRequest request)
     {
         CflObject object = setObject(request);
         object = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).get(object.getObjectId());
@@ -143,14 +146,14 @@ public class ObjectService implements CflService<CflObject>{
     }
 
     //mapping information insert / delete Database and refresh cache
-    public JSONObject createObjectAuthority(JSONObject request){
+    public ApiRequest createObjectAuthority(ApiRequest request){
         CflObject object = setObject(request);
         Authority authority = commonService.setAuthority(request);
         mappingMapper.insertObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
         return request;
     }
-    public JSONObject removeObjectAuthority(JSONObject request){
+    public ApiRequest removeObjectAuthority(ApiRequest request){
         CflObject object = setObject(request);
         Authority authority = commonService.setAuthority(request);
         mappingMapper.deleteObjectAuthority(object, authority);
@@ -158,7 +161,7 @@ public class ObjectService implements CflService<CflObject>{
         return request;
     }
     //get AuthorityIds in Object from cache
-    public List<String> getObjectAuthorityIds(JSONObject request){
+    public List<String> getObjectAuthorityIds(ApiRequest request){
         CflObject object = setObject(request);
         List<String> authorityIdList = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).
                 get(object.getObjectId()).getAuthorityIds();
@@ -171,13 +174,10 @@ public class ObjectService implements CflService<CflObject>{
     }
 
     //JSON request to CflObject Object
-    public CflObject setObject(JSONObject requestObject){
-        CflObject object = new CflObject();
-        object.setObjectId((String)requestObject.getJSONObject("object").get("objectId"));
-        object.setObjectName((String)requestObject.getJSONObject("object").get("objectName"));
-        object.setObjectSequence((String)requestObject.getJSONObject("object").get("objectSeq"));
-        object.setServiceName((String)requestObject.get("serviceName"));
-        object.setTenantId((String)requestObject.get("tenantId"));
+    public CflObject setObject(ApiRequest requestObject){
+        CflObject object = requestObject.getObject();
+        object.setServiceName(requestObject.getServiceName());
+        object.setTenantId(requestObject.getTenantId());
 
         return object;
     }

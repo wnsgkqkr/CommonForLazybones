@@ -11,10 +11,10 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     @Autowired
     private NetworkAclInterceptor networkAclInterceptor;
 
-    public void addInterceptor(InterceptorRegistry registry){
+    @Override
+    public void addInterceptors(InterceptorRegistry registry){
         registry.addInterceptor(networkAclInterceptor)
-                .addPathPatterns("/*")
-                .addPathPatterns("/*/*")
+                .addPathPatterns("/**")
                 .excludePathPatterns("/error");
     }
 }

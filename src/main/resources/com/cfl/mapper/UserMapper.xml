@@ -11,19 +11,19 @@
             cfl_user
         WHERE
             user_id = #{user.userId}
-            AND svc_nm = #{user.serviceName}
-            AND tnnt_id = #{user.tenantId}
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </select>
 
     <insert id="insertUser">
         INSERT INTO
             cfl_user (user_id, user_type, tnnt_id, user_seq, svc_nm)
         VALUE
-            (#{user.userId}
-            , #{user.userType}
-            , #{user.tenantId}
-            , #{user.userSequence}
-            , #{user.serviceName})
+            (#{userId}
+            , #{userType}
+            , #{tenantId}
+            , #{userSequence}
+            , #{serviceName})
     </insert>
 
     <update id="updateUser">
