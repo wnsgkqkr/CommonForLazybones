@@ -4,7 +4,16 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper
         namespace="com.cfl.mapper.UserMapper">
-    <select id="selectUser" resultType="User">
+
+    <resultMap id="User" type="User">
+        <id property="userSequence" column="user_seq" />
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
+    <select id="selectUser" resultMap="User">
         SELECT
             *
         FROM
@@ -35,6 +44,8 @@
             , tnnt_id = #{tenantId}
             , user_seq = #{userSequence}
             , svc_nm = #{serviceName}
+        WHERE
+            user_seq = #{userSequence}
     </update>
 
     <delete id="deleteUser">

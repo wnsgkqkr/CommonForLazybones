@@ -5,7 +5,15 @@
 <mapper
         namespace="com.cfl.mapper.CflObjectMapper">
 
-    <select id="selectTenantObjects" resultType="CflObject">
+    <resultMap id="CflObject" type="CflObject">
+        <id property="objectSequence" column="objt_seq" />
+        <result property="objectId" column="objt_id"/>
+        <result property="objectName" column="objt_nm"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
+    <select id="selectTenantObjects" resultMap="CflObject">
         SELECT
             *
         FROM
@@ -15,7 +23,7 @@
             AND tnnt_id = #{tenantId}
     </select>
 
-    <select id="selectServiceObjects" resultType="CflObject">
+    <select id="selectServiceObjects" resultMap="CflObject">
         SELECT
             *
         FROM
@@ -24,14 +32,14 @@
             svc_nm = #{serviceName}
     </select>
 
-    <select id="selectAllObjects" resultType="CflObject">
+    <select id="selectAllObjects" resultMap="CflObject">
         SELECT
             *
         FROM
             cfl_object
     </select>
 
-    <select id="selectObject" resultType="CflObject">
+    <select id="selectObject" resultMap="CflObject">
         SELECT
             *
         FROM

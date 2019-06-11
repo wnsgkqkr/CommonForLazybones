@@ -35,8 +35,7 @@
         UPDATE
             cfl_code
         SET
-            cd_id = #{codeId}
-            , mlng_cd = #{multiLanguageCode}
+            mlng_cd = #{multiLanguageCode}
             , prnt_cd_id = #{parentCodeId}
             , tnnt_id = #{tenantId}
             , cd_desc = #{codeDescription}
@@ -44,6 +43,8 @@
             , sort_ord = #{sortOrder}
             , cd_nm = #{codeName}
             , svc_nm = #{serviceName}
+        WHERE
+            cd_id = #{codeId}
     </update>
 
     <delete id="deleteCode">

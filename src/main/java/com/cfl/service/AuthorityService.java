@@ -48,20 +48,21 @@ public class AuthorityService implements CflService<Authority>{
     public Authority getData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         Map<String, Authority> authorityMap = getAuthorityMap(authority);
-        authority = authorityMap.get(authority.getAuthorityId());
-        if(authority == null) {
+        Authority mapAuthority = authorityMap.get(authority.getAuthorityId());
+        if(mapAuthority == null) {
             authority = authorityMapper.selectAuthority(authority);
             Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).put(authority.getAuthorityId(), authority);
+            return authority;
         }
-        return authority;
+        return mapAuthority;
     }
     //get UserList in Authority from cache or Database and put cache
     public List<User> getAuthorityUsers(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         Map<String, Authority> authorityMap = getAuthorityMap(authority);
-        authority = authorityMap.get(authority.getAuthorityId());
-        if(authority != null){
-            return authority.getAuthorityToUsers();
+        Authority mapAuthority = authorityMap.get(authority.getAuthorityId());
+        if(mapAuthority != null){
+            return mapAuthority.getAuthorityToUsers();
         }else{
             List<User> userList = mappingMapper.selectAuthorityUsers(authority);
             if(userList == null){
@@ -93,7 +94,7 @@ public class AuthorityService implements CflService<Authority>{
         Map<String, Authority> TenantIdMap = serviceNameMap.get(tenantId);
         if(TenantIdMap==null){
             TenantIdMap = new HashMap<>();
-            serviceNameMap.put(tenantId,TenantIdMap);
+            Cache.authorityUserCache.get(serviceName).put(tenantId,TenantIdMap);
         }
 
         return TenantIdMap;

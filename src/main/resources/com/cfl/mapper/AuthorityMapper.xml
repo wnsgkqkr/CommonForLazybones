@@ -5,7 +5,16 @@
 <mapper
         namespace="com.cfl.mapper.AuthorityMapper">
 
-    <select id="selectTenantAuthorities" resultType="Authority">
+    <resultMap id="Authority" type="Authority">
+        <id property="authoritySequence" column="auth_seq" />
+        <result property="authorityId" column="auth_id"/>
+        <result property="authorityName" column="auth_nm"/>
+        <result property="authorityType" column="auth_type"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
+    <select id="selectTenantAuthorities" resultMap="Authority">
         SELECT
             *
         FROM
@@ -15,7 +24,7 @@
             AND tnnt_id = #{tenantId}
     </select>
 
-    <select id="selectAuthority" resultType="Authority">
+    <select id="selectAuthority" resultMap="Authority">
         SELECT
             *
         FROM

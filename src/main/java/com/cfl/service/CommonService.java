@@ -59,7 +59,7 @@ public class CommonService {
         return requestObject;
     }
 
-    //JSON request to Authority Object
+    //VO request to Authority Object
     public Authority setAuthority(ApiRequest requestObject){
         Authority authority = requestObject.getAuthority();
         authority.setServiceName(requestObject.getServiceName());
@@ -68,7 +68,7 @@ public class CommonService {
         return authority;
     }
 
-    //JSON request to User Object
+    //VO request to User Object
     public User setUser(ApiRequest requestObject){
         User user = requestObject.getUser();
         user.setServiceName(requestObject.getServiceName());

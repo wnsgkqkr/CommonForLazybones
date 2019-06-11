@@ -137,12 +137,13 @@ public class ObjectService implements CflService<CflObject>{
     public CflObject getData(ApiRequest request)
     {
         CflObject object = setObject(request);
-        object = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).get(object.getObjectId());
-        if(object == null){
+        CflObject mapObject = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).get(object.getObjectId());
+        if(mapObject == null){
             object = cflObjectMapper.selectObject(object);
             Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).put(object.getObjectId(),object);
+            return object;
         }
-        return object;
+        return mapObject;
     }
 
     //mapping information insert / delete Database and refresh cache
@@ -173,7 +174,7 @@ public class ObjectService implements CflService<CflObject>{
         return authorityIdList;
     }
 
-    //JSON request to CflObject Object
+    //VO request to CflObject Object
     public CflObject setObject(ApiRequest requestObject){
         CflObject object = requestObject.getObject();
         object.setServiceName(requestObject.getServiceName());

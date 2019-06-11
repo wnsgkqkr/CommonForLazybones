@@ -52,7 +52,7 @@ public class NetworkAclService implements CflService<AllowedServer>{
     public AllowedServer getData(ApiRequest requestObject){
         return allowedServerMapper.selectAllowedServer(setAllowedServer(requestObject));
     }
-    //JSON request to AllowedServer Object
+    //VO request to AllowedServer Object
     public AllowedServer setAllowedServer(ApiRequest requestObject){
         AllowedServer allowedServer = requestObject.getAllowedServer();
         allowedServer.setServiceName(requestObject.getServiceName());

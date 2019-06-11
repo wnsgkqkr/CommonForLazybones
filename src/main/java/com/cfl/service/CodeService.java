@@ -30,7 +30,7 @@ public class CodeService implements CflService<Code>{
     public Code getData(ApiRequest requestObject){
         return codeMapper.selectCode(setCode(requestObject));
     }
-    //JSON request to Code Object
+    //VO request to Code Object
     public Code setCode(ApiRequest requestObject){
         Code code = requestObject.getCode();
         code.setServiceName(requestObject.getServiceName());

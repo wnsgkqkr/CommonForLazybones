@@ -5,6 +5,23 @@
 <mapper
         namespace="com.cfl.mapper.MappingMapper">
 
+    <resultMap id="Authority" type="Authority">
+        <id property="authoritySequence" column="auth_seq" />
+        <result property="authorityId" column="auth_id"/>
+        <result property="authorityName" column="auth_nm"/>
+        <result property="authorityType" column="auth_type"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
+    <resultMap id="User" type="User">
+        <id property="userSequence" column="user_seq" />
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
     <insert id="insertUserAuthority">
         INSERT INTO
             cfl_authority_user_mapping (auth_seq, user_seq)
