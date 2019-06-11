@@ -5,7 +5,19 @@
 <mapper
         namespace="com.cfl.mapper.CodeMapper">
 
-    <select id="selectCode" resultType="Code">
+    <resultMap id="Code" type="Code">
+        <id property="codeId" column="cd_id" />
+        <result property="parentCodeId" column="prnt_cd_id"/>
+        <result property="multiLanguageCode" column="mlng_cd"/>
+        <result property="codeName" column="cd_nm"/>
+        <result property="codeDescription" column="cd_desc"/>
+        <result property="isUsed" column="use_yn"/>
+        <result property="sortOrder" column="sort_ord"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
+    <select id="selectCode" resultMap="Code">
         SELECT
             *
         FROM
@@ -18,7 +30,7 @@
 
     <insert id="insertCode">
         INSERT INTO
-            cfl_code (cd_id, mlngcd, prnt_cd_id, tnnt_id, cd_desc, use_yn, sort_ord, cd_nm, svc_nm)
+            cfl_code (cd_id, mlng_cd, prnt_cd_id, tnnt_id, cd_desc, use_yn, sort_ord, cd_nm, svc_nm)
         VALUE
             (#{codeId}
             , #{multiLanguageCode}

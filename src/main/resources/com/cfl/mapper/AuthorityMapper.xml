@@ -53,7 +53,7 @@
             auth_id = #{authorityId}
             , tnnt_id = #{tenantId}
             , auth_nm = #{authorityName}
-            , svc_nm = #{serviceName})
+            , svc_nm = #{serviceName}
             , auth_type = #{authorityType}
         WHERE
             auth_seq = #{authoritySequence}

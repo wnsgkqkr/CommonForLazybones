@@ -13,6 +13,6 @@ public interface CflObjectMapper {
     CflObject selectObject(CflObject object);
 
     List<CflObject> selectAllObjects();
-    List<CflObject> selectServiceObjects(String ServiceName);
-    List<CflObject> selectTenantObjects(String ServiceName, String tenantId);
+    List<CflObject> selectServiceObjects(String serviceName);
+    List<CflObject> selectTenantObjects(String serviceName, String tenantId);
 }

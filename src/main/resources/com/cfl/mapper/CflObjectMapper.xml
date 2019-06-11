@@ -67,7 +67,7 @@
             objt_id = #{objectId}
             , tnnt_id = #{tenantId}
             , objt_nm = #{objectName}
-            , svc_nm = #{serviceName})
+            , svc_nm = #{serviceName}
         WHERE
             objt_seq = #{objectSequence}
     </update>
