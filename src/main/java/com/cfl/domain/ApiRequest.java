@@ -16,4 +16,5 @@ public class ApiRequest {
     User user;
     AllowedServer allowedServer;
     Code code;
+    History history;
 }

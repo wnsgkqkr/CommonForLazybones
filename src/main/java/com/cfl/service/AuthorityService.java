@@ -24,24 +24,30 @@ public class AuthorityService implements CflService<Authority>{
     private MappingMapper mappingMapper;
     @Autowired
     private CommonService commonService;
+    @Autowired
+    private HistoryService historyService;
 
     //Authority insert / update / delete Database and refresh cache
     public Authority createData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.insertAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        //TODO return message 정하기
+        historyService.createHistory(authority.getAuthorityName() + " create ", requestObject, "return message");
         return authority;
     }
     public Authority modifyData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.updateAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        historyService.createHistory(authority.getAuthorityName() + " modify ", requestObject, "return message");
         return authority;
     }
     public Authority removeData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.deleteAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
+        historyService.createHistory(authority.getAuthorityName() + " remove ", requestObject, "return message");
         return authority;
     }
     //get Authority from cache or Database and put cache
@@ -82,7 +88,7 @@ public class AuthorityService implements CflService<Authority>{
     }
 
     //get AuthorityMap in Cache(make cache)
-    public Map<String, Authority> getAuthorityMap(Authority authority){
+    private Map<String, Authority> getAuthorityMap(Authority authority){
         String serviceName = authority.getServiceName();
         Map<String, Map<String, Authority>> serviceNameMap = Cache.authorityUserCache.get(serviceName);
         if(serviceNameMap == null){

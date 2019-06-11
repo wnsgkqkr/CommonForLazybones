@@ -23,12 +23,15 @@ public class CommonService {
     private UserMapper userMapper;
     @Autowired
     private MappingMapper mappingMapper;
+    @Autowired
+    private HistoryService historyService;
 
     //set response API = isSuccess(Boolean), resultCode(int), resultMessage(String)
     public Map<String,Object> successResult(JSONObject jsonObject){
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("isSuccess", true);
         returnMap.put("resultCode", HttpStatus.SC_OK);
+        //TODO return message 정하기
         returnMap.put("resultMessage", jsonObject.toString());
 
         return returnMap;
@@ -37,6 +40,7 @@ public class CommonService {
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("isSuccess", false);
         returnMap.put("resultCode", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        //TODO return message 정하기
         returnMap.put("resultMessage", e.getMessage());
 
         return returnMap;
@@ -49,6 +53,7 @@ public class CommonService {
         Authority authority = setAuthority(requestObject);
         mappingMapper.insertUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
+        historyService.createHistory(user.getUserId() + ", " + authority.getAuthorityName() + " create ", requestObject, "return message");
         return requestObject;
     }
     public ApiRequest removeUserAuthority(ApiRequest requestObject){
@@ -56,6 +61,7 @@ public class CommonService {
         Authority authority = setAuthority(requestObject);
         mappingMapper.deleteUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
+        historyService.createHistory(user.getUserId() + ", " + authority.getAuthorityName() + " remove ", requestObject, "return message");
         return requestObject;
     }
 

@@ -20,6 +20,8 @@ public class ObjectService implements CflService<CflObject>{
     private MappingMapper mappingMapper;
     @Autowired
     private CommonService commonService;
+    @Autowired
+    private HistoryService historyService;
 
     //setup new cache map
     private Map<String, Map<String, Map<String, CflObject>>> getObjects(List<CflObject> objectList){
@@ -115,22 +117,25 @@ public class ObjectService implements CflService<CflObject>{
         return Cache.objectAuthorityCache;
     }
     //object insert / update / delete Database and refresh cache
-    public CflObject createData(ApiRequest request){
-        CflObject object = setObject(request);
+    public CflObject createData(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
         cflObjectMapper.insertObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
+        historyService.createHistory(object.getObjectName() + " create ", requestObject, "return message");
         return object;
     }
-    public CflObject modifyData(ApiRequest request){
-        CflObject object = setObject(request);
+    public CflObject modifyData(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
         cflObjectMapper.updateObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
+        historyService.createHistory(object.getObjectName() + " modify ", requestObject, "return message");
         return object;
     }
-    public CflObject removeData(ApiRequest request){
-        CflObject object = setObject(request);
+    public CflObject removeData(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
         cflObjectMapper.deleteObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
+        historyService.createHistory(object.getObjectName() + " remove ", requestObject, "return message");
         return object;
     }
     //get Object from cache
@@ -147,23 +152,25 @@ public class ObjectService implements CflService<CflObject>{
     }
 
     //mapping information insert / delete Database and refresh cache
-    public ApiRequest createObjectAuthority(ApiRequest request){
-        CflObject object = setObject(request);
-        Authority authority = commonService.setAuthority(request);
+    public ApiRequest createObjectAuthority(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
+        Authority authority = commonService.setAuthority(requestObject);
         mappingMapper.insertObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        return request;
+        historyService.createHistory(object.getObjectName() + ", " + authority.getAuthorityName() + " create ", requestObject, "return message");
+        return requestObject;
     }
-    public ApiRequest removeObjectAuthority(ApiRequest request){
-        CflObject object = setObject(request);
-        Authority authority = commonService.setAuthority(request);
+    public ApiRequest removeObjectAuthority(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
+        Authority authority = commonService.setAuthority(requestObject);
         mappingMapper.deleteObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        return request;
+        historyService.createHistory(object.getObjectName() + ", " + authority.getAuthorityName() + " remove ", requestObject, "return message");
+        return requestObject;
     }
     //get AuthorityIds in Object from cache
-    public List<String> getObjectAuthorityIds(ApiRequest request){
-        CflObject object = setObject(request);
+    public List<String> getObjectAuthorityIds(ApiRequest requestObject){
+        CflObject object = setObject(requestObject);
         List<String> authorityIdList = Cache.objectAuthorityCache.get(object.getServiceName()).get(object.getTenantId()).
                 get(object.getObjectId()).getAuthorityIds();
         if(authorityIdList == null){
@@ -175,7 +182,7 @@ public class ObjectService implements CflService<CflObject>{
     }
 
     //VO request to CflObject Object
-    public CflObject setObject(ApiRequest requestObject){
+    private CflObject setObject(ApiRequest requestObject){
         CflObject object = requestObject.getObject();
         object.setServiceName(requestObject.getServiceName());
         object.setTenantId(requestObject.getTenantId());

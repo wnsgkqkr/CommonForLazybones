@@ -14,6 +14,8 @@ import java.util.List;
 public class NetworkAclService implements CflService<AllowedServer>{
     @Autowired
     private AllowedServerMapper allowedServerMapper;
+    @Autowired
+    private HistoryService historyService;
 
     public boolean isAllowedServer(String ipv4Address){
         AllowedServer allowedServer = allowedServerMapper.selectAllowedServerByIpv4(ipv4Address);
@@ -36,24 +38,27 @@ public class NetworkAclService implements CflService<AllowedServer>{
     public AllowedServer createData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.insertAllowedServer(allowedServer);
+        historyService.createHistory(allowedServer.getServerIp() + " create ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer modifyData(ApiRequest requestObject){
         String originalIp = requestObject.getOriginalIp();
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.updateAllowedServer(allowedServer, originalIp);
+        historyService.createHistory(allowedServer.getServerIp() + " modify ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer removeData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.deleteAllowedServer(allowedServer);
+        historyService.createHistory(allowedServer.getServerIp() + " remove ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer getData(ApiRequest requestObject){
         return allowedServerMapper.selectAllowedServer(setAllowedServer(requestObject));
     }
     //VO request to AllowedServer Object
-    public AllowedServer setAllowedServer(ApiRequest requestObject){
+    private AllowedServer setAllowedServer(ApiRequest requestObject){
         AllowedServer allowedServer = requestObject.getAllowedServer();
         allowedServer.setServiceName(requestObject.getServiceName());
         allowedServer.setTenantId(requestObject.getTenantId());
