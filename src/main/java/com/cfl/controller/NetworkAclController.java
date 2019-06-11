@@ -17,7 +17,7 @@ public class NetworkAclController {
     private CommonService commonService;
 
     //network ACL create, modify, remove, get
-    @RequestMapping(value="/network-acl")
+    @PostMapping(value="/network-acl")
     public Map<String, Object> createNetworkAcl(@RequestBody ApiRequest requestObject) {
         try{
             AllowedServer allowedServer = networkAclService.createData(requestObject);

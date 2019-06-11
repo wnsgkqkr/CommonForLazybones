@@ -17,7 +17,7 @@ public class CodeController {
     private CommonService commonService;
 
     //Code create, modify, remove, get
-    @RequestMapping(value = "/code")
+    @PostMapping(value = "/code")
     public Map<String, Object> createCode(@RequestBody ApiRequest requestObject) {
         try {
             Code code = codeService.createData(requestObject);
