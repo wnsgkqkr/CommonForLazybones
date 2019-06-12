@@ -121,21 +121,18 @@ public class ObjectService implements CflService<CflObject>{
         CflObject object = setObject(requestObject);
         cflObjectMapper.insertObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
-        historyService.createHistory(object.getObjectName() + " create ", requestObject, "return message");
         return object;
     }
     public CflObject modifyData(ApiRequest requestObject){
         CflObject object = setObject(requestObject);
         cflObjectMapper.updateObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
-        historyService.createHistory(object.getObjectName() + " modify ", requestObject, "return message");
         return object;
     }
     public CflObject removeData(ApiRequest requestObject){
         CflObject object = setObject(requestObject);
         cflObjectMapper.deleteObject(object);
         refreshCache(object.getServiceName(), object.getTenantId());
-        historyService.createHistory(object.getObjectName() + " remove ", requestObject, "return message");
         return object;
     }
     //get Object from cache
@@ -157,7 +154,6 @@ public class ObjectService implements CflService<CflObject>{
         Authority authority = commonService.setAuthority(requestObject);
         mappingMapper.insertObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        historyService.createHistory(object.getObjectName() + ", " + authority.getAuthorityName() + " create ", requestObject, "return message");
         return requestObject;
     }
     public ApiRequest removeObjectAuthority(ApiRequest requestObject){
@@ -165,7 +161,6 @@ public class ObjectService implements CflService<CflObject>{
         Authority authority = commonService.setAuthority(requestObject);
         mappingMapper.deleteObjectAuthority(object, authority);
         refreshCache(object.getServiceName(), object.getTenantId());
-        historyService.createHistory(object.getObjectName() + ", " + authority.getAuthorityName() + " remove ", requestObject, "return message");
         return requestObject;
     }
     //get AuthorityIds in Object from cache

@@ -38,20 +38,17 @@ public class NetworkAclService implements CflService<AllowedServer>{
     public AllowedServer createData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.insertAllowedServer(allowedServer);
-        historyService.createHistory(allowedServer.getServerIp() + " create ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer modifyData(ApiRequest requestObject){
         String originalIp = requestObject.getOriginalIp();
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.updateAllowedServer(allowedServer, originalIp);
-        historyService.createHistory(allowedServer.getServerIp() + " modify ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer removeData(ApiRequest requestObject){
         AllowedServer allowedServer = setAllowedServer(requestObject);
         allowedServerMapper.deleteAllowedServer(allowedServer);
-        historyService.createHistory(allowedServer.getServerIp() + " remove ", requestObject, "return message");
         return allowedServer;
     }
     public AllowedServer getData(ApiRequest requestObject){

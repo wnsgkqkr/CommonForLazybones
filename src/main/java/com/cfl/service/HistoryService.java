@@ -9,35 +9,37 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class HistoryService {
     @Autowired
     private HistoryMapper historyMapper;
 
-    public History createHistory(String objectMethod, ApiRequest request, String returnMessage){
-        History history = setHistory(objectMethod, request, returnMessage);
-        historyMapper.insertHistory(history);
+    public History createHistory(ApiRequest request, String returnMessage){
+        HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+        History history = setHistory(request, returnMessage, httpRequest);
+        if(!isGetMethod(httpRequest)) {
+            historyMapper.insertHistory(history);
+        }
         return history;
     }
 
-    public History setHistory(String objectMethod, ApiRequest request, String returnMessage){
+    private History setHistory(ApiRequest request, String returnMessage, HttpServletRequest httpRequest){
         History history = new History();
-        HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-                .getRequest();
 
         history.setRegisterServerIp(httpRequest.getRemoteAddr());
-        history.setHistoryId(UUID.randomUUID().toString());
-        history.setActionDateTime(new Timestamp(new Date().getTime()));
-        history.setRequestContents(httpRequest.getRequestURI() + ' ' + objectMethod);
+        history.setRequestContents(httpRequest.getRequestURI() + ' ' + httpRequest.getMethod());
         history.setReturnMessage(returnMessage);
         history.setServiceName(request.getServiceName());
-        history.setServiceName(request.getTenantId());
+        history.setTenantId(request.getTenantId());
         return history;
+    }
+
+    private Boolean isGetMethod(HttpServletRequest httpRequest){
+        if("GET".equals(httpRequest.getMethod())){
+            return true;
+        }
+        return false;
     }
 }

@@ -32,22 +32,18 @@ public class AuthorityService implements CflService<Authority>{
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.insertAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
-        //TODO return message 정하기
-        historyService.createHistory(authority.getAuthorityName() + " create ", requestObject, "return message");
         return authority;
     }
     public Authority modifyData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.updateAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
-        historyService.createHistory(authority.getAuthorityName() + " modify ", requestObject, "return message");
         return authority;
     }
     public Authority removeData(ApiRequest requestObject){
         Authority authority = commonService.setAuthority(requestObject);
         authorityMapper.deleteAuthority(authority);
         commonService.clearUserAuthorityTenantCache(authority.getServiceName(), authority.getTenantId());
-        historyService.createHistory(authority.getAuthorityName() + " remove ", requestObject, "return message");
         return authority;
     }
     //get Authority from cache or Database and put cache

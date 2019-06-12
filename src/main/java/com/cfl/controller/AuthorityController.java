@@ -1,6 +1,7 @@
 package com.cfl.controller;
 
 import com.cfl.domain.ApiRequest;
+import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.service.AuthorityService;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping(value = "/authority")
 public class AuthorityController {
     @Autowired
     private AuthorityService authorityService;
@@ -19,76 +21,76 @@ public class AuthorityController {
     private CommonService commonService;
 
     //add, remove, get users to authority
-    @PostMapping(value="/authority/user")
-    public Map<String, Object> createAuthorityUser(@RequestBody ApiRequest requestObject){
+    @PostMapping(value="/user")
+    public ApiResponse createAuthorityUser(@RequestBody ApiRequest requestObject){
         try{
             commonService.createUserAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(requestObject));
+            return commonService.successResult(requestObject, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @DeleteMapping(value="/authority/user")
-    public Map<String, Object> removeAuthorityUser(@RequestBody ApiRequest requestObject){
+    @DeleteMapping(value="/user")
+    public ApiResponse removeAuthorityUser(@RequestBody ApiRequest requestObject){
         try{
             commonService.removeUserAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(requestObject));
+            return commonService.successResult(requestObject, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @GetMapping(value="/authority/user")
-    public Map<String, Object> getAuthorityUsers(@RequestBody ApiRequest requestObject){
+    @GetMapping(value="/user")
+    public ApiResponse getAuthorityUsers(@RequestBody ApiRequest requestObject){
         try{
             List<User> userList = authorityService.getAuthorityUsers(requestObject);
-            return commonService.successResult(commonService.toJson(userList));
+            return commonService.successResult(userList, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
 
     //add, update, remove, get authority
-    @PostMapping(value="/authority")
-    public Map<String, Object> createAuthority(@RequestBody ApiRequest requestObject){
+    @PostMapping
+    public ApiResponse createAuthority(@RequestBody ApiRequest requestObject){
         try{
             Authority authority = authorityService.createData(requestObject);
-            return commonService.successResult(commonService.toJson(authority));
+            return commonService.successResult(authority, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @PutMapping(value="/authority")
-    public Map<String, Object> modifyAuthority(@RequestBody ApiRequest requestObject){
+    @PutMapping
+    public ApiResponse modifyAuthority(@RequestBody ApiRequest requestObject){
         try{
             Authority authority = authorityService.modifyData(requestObject);
-            return commonService.successResult(commonService.toJson(authority));
+            return commonService.successResult(authority, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @DeleteMapping(value="/authority")
-    public Map<String, Object> removeAuthority(@RequestBody ApiRequest requestObject){
+    @DeleteMapping
+    public ApiResponse removeAuthority(@RequestBody ApiRequest requestObject){
         try{
             Authority authority = authorityService.removeData(requestObject);
-            return commonService.successResult(commonService.toJson(authority));
+            return commonService.successResult(authority, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @GetMapping(value="/authority")
-    public Map<String, Object> getAuthority(@RequestBody ApiRequest requestObject){
+    @GetMapping
+    public ApiResponse getAuthority(@RequestBody ApiRequest requestObject){
         try{
             Authority authority = authorityService.getData(requestObject);
-            return commonService.successResult(commonService.toJson(authority));
+            return commonService.successResult(authority, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
     @GetMapping(value="/authorities")
-    public Map<String, Object> getAuthorities(@RequestBody ApiRequest requestObject){
+    public ApiResponse getAuthorities(@RequestBody ApiRequest requestObject){
         try{
             List<Authority> authorityList = authorityService.getTenantAuthorities(requestObject);
-            return commonService.successResult(commonService.toJson(authorityList));
+            return commonService.successResult(authorityList, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }

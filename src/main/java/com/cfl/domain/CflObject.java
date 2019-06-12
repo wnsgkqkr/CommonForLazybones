@@ -11,7 +11,6 @@ import java.util.Map;
 public class CflObject {
     private String objectId;
     private String objectName;
-    private Map<String, CflObject> parentObjects;
     private String tenantId;
     private String serviceName;
     private String objectSequence;

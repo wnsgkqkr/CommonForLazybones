@@ -22,7 +22,7 @@
             (#{historyId}
             , #{requestContents}
             , #{returnMessage}
-            , #{actionDateTime}
+            , CURRENT_TIMESTAMP()
             , #{tenantId}
             , #{serviceName}
             , #{registerServerIp})

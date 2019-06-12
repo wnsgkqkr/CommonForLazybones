@@ -18,19 +18,16 @@ public class CodeService implements CflService<Code>{
     public Code createData(ApiRequest requestObject){
         Code code = setCode(requestObject);
         codeMapper.insertCode(code);
-        historyService.createHistory(code.getCodeName() + " create ", requestObject, "return message");
         return code;
     }
     public Code modifyData(ApiRequest requestObject){
         Code code = setCode(requestObject);
         codeMapper.updateCode(code);
-        historyService.createHistory(code.getCodeName() + " modify ", requestObject, "return message");
         return code;
     }
     public Code removeData(ApiRequest requestObject){
         Code code = setCode(requestObject);
         codeMapper.deleteCode(code);
-        historyService.createHistory(code.getCodeName() + " remove ", requestObject, "return message");
         return code;
     }
     public Code getData(ApiRequest requestObject){

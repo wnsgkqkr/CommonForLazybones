@@ -1,6 +1,7 @@
 package com.cfl.controller;
 
 import com.cfl.domain.ApiRequest;
+import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.service.CommonService;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping(value="/user")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -19,68 +21,68 @@ public class UserController {
     private CommonService commonService;
 
     //add, remove, get Authorities to User
-    @PostMapping(value="/user/authority")
-    public Map<String, Object> createUserAuthority(@RequestBody ApiRequest requestObject){
+    @PostMapping(value="/authority")
+    public ApiResponse createUserAuthority(@RequestBody ApiRequest requestObject){
         try{
             commonService.createUserAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(requestObject));
+            return commonService.successResult(requestObject, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @DeleteMapping(value="/user/authority")
-    public Map<String, Object> removeUserAuthority(@RequestBody ApiRequest requestObject){
+    @DeleteMapping(value="/authority")
+    public ApiResponse removeUserAuthority(@RequestBody ApiRequest requestObject){
         try{
             commonService.removeUserAuthority(requestObject);
-            return commonService.successResult(commonService.toJson(requestObject));
+            return commonService.successResult(requestObject, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @GetMapping(value="/user/authority")
-    public Map<String, Object> getUserAuthorities(@RequestBody ApiRequest requestObject){
+    @GetMapping(value="/authority")
+    public ApiResponse getUserAuthorities(@RequestBody ApiRequest requestObject){
         try{
             List<Authority> authorityList = userService.getUserAuthorities(requestObject);
-            return commonService.successResult(commonService.toJson(authorityList));
+            return commonService.successResult(authorityList, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
 
     //add, update, remove, get user
-    @PostMapping(value="/user")
-    public Map<String, Object> createUser(@RequestBody ApiRequest requestObject){
+    @PostMapping
+    public ApiResponse createUser(@RequestBody ApiRequest requestObject){
         try{
             User user = userService.createData(requestObject);
-            return commonService.successResult(commonService.toJson(user));
+            return commonService.successResult(user, requestObject);
         } catch (Exception e){
             e.printStackTrace();
             return commonService.failResult(e);
         }
     }
-    @PutMapping(value="/user")
-    public Map<String, Object> modifyUser(@RequestBody ApiRequest requestObject){
+    @PutMapping
+    public ApiResponse modifyUser(@RequestBody ApiRequest requestObject){
         try{
             User user = userService.modifyData(requestObject);
-            return commonService.successResult(commonService.toJson(user));
+            return commonService.successResult(user, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @DeleteMapping(value="/user")
-    public Map<String, Object> removeUser(@RequestBody ApiRequest requestObject){
+    @DeleteMapping
+    public ApiResponse removeUser(@RequestBody ApiRequest requestObject){
         try{
             User user = userService.removeData(requestObject);
-            return commonService.successResult(commonService.toJson(user));
+            return commonService.successResult(user, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }
     }
-    @GetMapping(value="/user")
-    public Map<String, Object> getUser(@RequestBody ApiRequest requestObject){
+    @GetMapping
+    public ApiResponse getUser(@RequestBody ApiRequest requestObject){
         try{
             User user = userService.getData(requestObject);
-            return commonService.successResult(commonService.toJson(user));
+            return commonService.successResult(user, requestObject);
         } catch (Exception e){
             return commonService.failResult(e);
         }

@@ -30,21 +30,18 @@ public class UserService{// implements CflService<User> {
         User user = commonService.setUser(requestObject);
         userMapper.insertUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
-        historyService.createHistory(user.getUserId() + " create ", requestObject, "return message");
         return user;
     }
     public User modifyData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         userMapper.updateUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
-        historyService.createHistory(user.getUserId() + " modify ", requestObject, "return message");
         return user;
     }
     public User removeData(ApiRequest requestObject){
         User user = commonService.setUser(requestObject);
         userMapper.deleteUser(user);
         commonService.clearUserAuthorityTenantCache(user.getServiceName(), user.getTenantId());
-        historyService.createHistory(user.getUserId() + " remove ", requestObject, "return message");
         return user;
     }
     //get User from cache or Database and put cache

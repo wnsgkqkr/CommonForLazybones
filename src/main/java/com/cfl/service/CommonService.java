@@ -2,19 +2,15 @@ package com.cfl.service;
 
 import com.cfl.cache.Cache;
 import com.cfl.domain.ApiRequest;
+import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.mapper.MappingMapper;
 import com.cfl.mapper.UserMapper;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -26,24 +22,19 @@ public class CommonService {
     @Autowired
     private HistoryService historyService;
 
+    public static final String MESSAGE_SUCCESS = "SUCCESS";
+    public static final String MESSAGE_FAILURE = "FAILURE";
+
     //set response API = isSuccess(Boolean), resultCode(int), resultMessage(String)
-    public Map<String,Object> successResult(JSONObject jsonObject){
-        Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("isSuccess", true);
-        returnMap.put("resultCode", HttpStatus.SC_OK);
-        //TODO return message 정하기
-        returnMap.put("resultMessage", jsonObject.toString());
+    public ApiResponse successResult(Object object, ApiRequest requestObject){
+        ApiResponse apiResponse = new ApiResponse(true, HttpStatus.SC_OK, MESSAGE_SUCCESS, object);
 
-        return returnMap;
+        historyService.createHistory(requestObject, object.toString());
+        return apiResponse;
     }
-    public Map<String,Object> failResult(Exception e){
-        Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("isSuccess", false);
-        returnMap.put("resultCode", HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        //TODO return message 정하기
-        returnMap.put("resultMessage", e.getMessage());
-
-        return returnMap;
+    public ApiResponse failResult(Object object){
+        ApiResponse apiResponse = new ApiResponse(false, HttpStatus.SC_INTERNAL_SERVER_ERROR, MESSAGE_FAILURE, object);
+        return apiResponse;
     }
 
     //user-authority insert / delete Database and clear cache
@@ -53,7 +44,6 @@ public class CommonService {
         Authority authority = setAuthority(requestObject);
         mappingMapper.insertUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
-        historyService.createHistory(user.getUserId() + ", " + authority.getAuthorityName() + " create ", requestObject, "return message");
         return requestObject;
     }
     public ApiRequest removeUserAuthority(ApiRequest requestObject){
@@ -61,7 +51,6 @@ public class CommonService {
         Authority authority = setAuthority(requestObject);
         mappingMapper.deleteUserAuthority(user, authority);
         clearUserAuthorityTenantCache(user.getServiceName(),user.getTenantId());
-        historyService.createHistory(user.getUserId() + ", " + authority.getAuthorityName() + " remove ", requestObject, "return message");
         return requestObject;
     }
 
@@ -81,11 +70,6 @@ public class CommonService {
         user.setTenantId(requestObject.getTenantId());
 
         return user;
-    }
-
-    //Object to JSON
-    public JSONObject toJson(Object object){
-        return new JSONObject(new Gson().toJson(object));
     }
 
     public void clearUserAuthorityCache(){
