@@ -23,6 +23,15 @@
             AND svr_ip = #{serverIp}
     </select>
 
+    <select id="selectProvideServer" resultMap="Server">
+        SELECT
+            *
+        FROM
+            cfl_provide_server
+        WHERE
+            svr_ip = #{serverIp}
+    </select>
+
     <select id="selectAllProvideServerIp">
         SELECT
             svr_ip

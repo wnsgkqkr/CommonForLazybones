@@ -17,7 +17,7 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <select id="selectTenantCodes" resultMap="CflCode">
+    <select id="selectTenantCodes" resultMap="Code">
         SELECT
             *
         FROM
@@ -27,7 +27,7 @@
             AND tnnt_id = #{tenantId}
     </select>
 
-    <select id="selectServiceCodes" resultMap="CflCode">
+    <select id="selectServiceCodes" resultMap="Code">
         SELECT
             *
         FROM
@@ -36,7 +36,7 @@
             svc_nm = #{serviceName}
     </select>
 
-    <select id="selectAllCodes" resultMap="CflCode">
+    <select id="selectAllCodes" resultMap="Code">
         SELECT
             *
         FROM

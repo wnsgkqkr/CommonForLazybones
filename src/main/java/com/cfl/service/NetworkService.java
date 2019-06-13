@@ -108,7 +108,13 @@ public class NetworkService {
             InetAddress ip = InetAddress.getLocalHost();
             provideServer.setServerIp(ip.getHostAddress());
             provideServer.setServerName(ip.getHostName());
-            serverMapper.insertProvideServer(provideServer);
+            provideServer.setServiceName("CFL");
+            provideServer.setTenantId(Constant.DEFAULT_TENANT_ID);
+
+            if(serverMapper.selectProvideServer(provideServer) == null) {
+                serverMapper.insertProvideServer(provideServer);
+                serverMapper.insertAllowedServer(provideServer);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
