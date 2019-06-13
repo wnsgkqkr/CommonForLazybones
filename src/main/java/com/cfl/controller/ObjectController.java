@@ -1,88 +1,69 @@
 package com.cfl.controller;
 
-import com.cfl.domain.ApiRequest;
 import com.cfl.domain.ApiResponse;
+import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
-import com.cfl.service.CommonService;
 import com.cfl.service.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping(value="/object")
 public class ObjectController {
     @Autowired
     private ObjectService objectService;
-    @Autowired
-    private CommonService commonService;
+    
+    private static final String OBJECT_URL_WITH_TENANT = "/{serviceName}/{tenantId}/object/{objectId}";
+    private static final String OBJECT_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}";
+    private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT = "/{serviceName}/{tenantId}//object/{objectId}/authorities";
+    private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}/authorities";
 
-    //add, remove, get Authorities to Object
-    @PostMapping(value="/authority")
-    public ApiResponse createObjectAuthority(@RequestBody ApiRequest requestObject){
-        try {
-            objectService.createObjectAuthority(requestObject);
-            return commonService.successResult(requestObject, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @PostMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
+    public ApiResponse createObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
+                                             @PathVariable("tenantId") String tenantId,
+                                             @PathVariable("objectId") String objectId,
+                                             @RequestBody List<Authority> requestAuthorities) {
+            return objectService.createObjectAuthoritiesMapping(serviceName, tenantId, objectId, requestAuthorities);
     }
-    @DeleteMapping(value="/authority")
-    public ApiResponse removeObjectAuthority(@RequestBody ApiRequest requestObject){
-        try {
-            objectService.removeObjectAuthority(requestObject);
-            return commonService.successResult(requestObject,requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @DeleteMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
+    public ApiResponse deleteObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
+                                                      @PathVariable("tenantId") String tenantId,
+                                                      @PathVariable("objectId") String objectId,
+                                                      @RequestBody List<Authority> requestAuthorities) {
+        return objectService.removeObjectAuthoritiesMapping(serviceName, tenantId, objectId, requestAuthorities);
     }
-    @GetMapping(value="/authority")
-    public ApiResponse getObjectAuthorityIds(@RequestBody ApiRequest requestObject){
-        try {
-            List<String> authorityIdList = objectService.getObjectAuthorityIds(requestObject);
-            return commonService.successResult(authorityIdList, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @GetMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
+    public ApiResponse getObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
+                                                      @PathVariable("tenantId") String tenantId,
+                                                      @PathVariable("objectId") String objectId) {
+        return objectService.getObjectAuthoritiesMapping(serviceName, tenantId, objectId);
     }
 
-    //add, remove, get Object
-    @PostMapping
-    public ApiResponse createObject(@RequestBody ApiRequest requestObject){
-        try {
-            CflObject object = objectService.createData(requestObject);
-            return commonService.successResult(object, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @PostMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
+    public ApiResponse createObject(@PathVariable("serviceName") String serviceName,
+                                    @PathVariable("tenantId") String tenantId,
+                                    @PathVariable("objectId") String objectId,
+                                    @RequestBody CflObject object) {
+            return objectService.createObject(serviceName, tenantId, objectId, object);
     }
-    @PutMapping
-    public ApiResponse modifyObject(@RequestBody ApiRequest requestObject){
-        try {
-            CflObject object = objectService.modifyData(requestObject);
-            return commonService.successResult(object, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @PutMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
+    public ApiResponse modifyObject(@PathVariable("serviceName") String serviceName,
+                                    @PathVariable("tenantId") String tenantId,
+                                    @PathVariable("objectId") String objectId,
+                                    @RequestBody CflObject object) {
+        return objectService.modifyObject(serviceName, tenantId, objectId, object);
     }
-    @DeleteMapping
-    public ApiResponse removeObject(@RequestBody ApiRequest requestObject){
-        try {
-            CflObject object = objectService.removeData(requestObject);
-            return commonService.successResult(object, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @DeleteMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
+    public ApiResponse removeObject(@PathVariable("serviceName") String serviceName,
+                                    @PathVariable("tenantId") String tenantId,
+                                    @PathVariable("objectId") String objectId) {
+        return objectService.removeObject(serviceName, tenantId, objectId);
     }
-    @GetMapping
-    public ApiResponse getObject(@RequestBody ApiRequest requestObject){
-        try {
-            CflObject object = objectService.getData(requestObject);
-            return commonService.successResult(object, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @GetMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
+    public ApiResponse getObject(@PathVariable("serviceName") String serviceName,
+                                    @PathVariable("tenantId") String tenantId,
+                                    @PathVariable("objectId") String objectId) {
+        return objectService.getObject(serviceName, tenantId, objectId);
     }
 }

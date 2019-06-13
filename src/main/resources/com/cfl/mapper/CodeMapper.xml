@@ -17,6 +17,32 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
+    <select id="selectTenantCodes" resultMap="CflCode">
+        SELECT
+            *
+        FROM
+            cfl_code
+        WHERE
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
+
+    <select id="selectServiceCodes" resultMap="CflCode">
+        SELECT
+            *
+        FROM
+            cfl_code
+        WHERE
+            svc_nm = #{serviceName}
+    </select>
+
+    <select id="selectAllCodes" resultMap="CflCode">
+        SELECT
+            *
+        FROM
+            cfl_code
+    </select>
+
     <select id="selectCode" resultMap="Code">
         SELECT
             *
@@ -57,6 +83,8 @@
             , svc_nm = #{serviceName}
         WHERE
             cd_id = #{codeId}
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </update>
 
     <delete id="deleteCode">

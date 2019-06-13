@@ -64,19 +64,23 @@
         UPDATE
             cfl_object
         SET
-            objt_id = #{objectId}
-            , tnnt_id = #{tenantId}
-            , objt_nm = #{objectName}
-            , svc_nm = #{serviceName}
+            objt_id = #{object.objectId}
+            , tnnt_id = #{object.tenantId}
+            , objt_nm = #{object.objectName}
+            , svc_nm = #{object.serviceName}
         WHERE
-            objt_seq = #{objectSequence}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND objt_id = #{objectId}
     </update>
 
     <delete id="deleteObject">
         DELETE FROM
             cfl_object
         WHERE
-            objt_seq = #{objectSequence}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND objt_id = #{objectId}
     </delete>
 
 </mapper>

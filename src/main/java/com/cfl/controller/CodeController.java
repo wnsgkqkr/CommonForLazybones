@@ -1,61 +1,46 @@
 package com.cfl.controller;
 
-import com.cfl.domain.ApiRequest;
 import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Code;
 import com.cfl.service.CodeService;
-import com.cfl.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
-@RequestMapping(value = "/code")
 public class CodeController {
     @Autowired
     private CodeService codeService;
-    @Autowired
-    private CommonService commonService;
 
-    //Code create, modify, remove, get
-    @PostMapping
-    public ApiResponse createCode(@RequestBody ApiRequest requestObject) {
-        try {
-            Code code = codeService.createData(requestObject);
-            return commonService.successResult(code, requestObject);
-        } catch (Exception e) {
-            return commonService.failResult(e);
-        }
+    private static final String CODE_URL_WITH_TENANT = "/{serviceName}/{tenantId}/code/{codeId}";
+    private static final String CODE_URL_WITHOUT_TENANT = "/{serviceName}/code/{codeId}";
+
+    @PostMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
+    public ApiResponse createCode(@PathVariable("serviceName") String serviceName,
+                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable("codeId") String codeId,
+                                  @RequestBody Code code) {
+        return codeService.createCode(serviceName, tenantId, codeId, code);
     }
 
-    @PutMapping
-    public ApiResponse modifyCode(@RequestBody ApiRequest requestObject) {
-        try {
-            Code code = codeService.modifyData(requestObject);
-            return commonService.successResult(code, requestObject);
-        } catch (Exception e) {
-            return commonService.failResult(e);
-        }
+    @PutMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
+    public ApiResponse modifyCode(@PathVariable("serviceName") String serviceName,
+                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable("codeId") String codeId,
+                                  @RequestBody Code code) {
+        return codeService.modifyCode(serviceName, tenantId, codeId, code);
     }
 
-    @DeleteMapping
-    public ApiResponse removeCode(@RequestBody ApiRequest requestObject) {
-        try {
-            Code code = codeService.removeData(requestObject);
-            return commonService.successResult(code, requestObject);
-        } catch (Exception e) {
-            return commonService.failResult(e);
-        }
+    @DeleteMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
+    public ApiResponse removeCode(@PathVariable("serviceName") String serviceName,
+                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable("codeId") String codeId) {
+        return codeService.removeCode(serviceName, tenantId, codeId);
     }
 
-    @GetMapping
-    public ApiResponse getCode(@RequestBody ApiRequest requestObject) {
-        try {
-            Code code = codeService.getData(requestObject);
-            return commonService.successResult(code, requestObject);
-        } catch (Exception e) {
-            return commonService.failResult(e);
-        }
+    @GetMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
+    public ApiResponse getCode(@PathVariable("serviceName") String serviceName,
+                               @PathVariable("tenantId") String tenantId,
+                               @PathVariable("codeId") String codeId) {
+        return codeService.getCode(serviceName, tenantId, codeId);
     }
 }

@@ -50,11 +50,11 @@
         UPDATE
             cfl_authority
         SET
-            auth_id = #{authorityId}
-            , tnnt_id = #{tenantId}
-            , auth_nm = #{authorityName}
-            , svc_nm = #{serviceName}
-            , auth_type = #{authorityType}
+            auth_id = #{authority.authorityId}
+            , tnnt_id = #{authority.tenantId}
+            , auth_nm = #{authority.authorityName}
+            , svc_nm = #{authority.serviceName}
+            , auth_type = #{authority.authorityType}
         WHERE
             svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}

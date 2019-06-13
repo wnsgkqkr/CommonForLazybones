@@ -3,25 +3,16 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper
-        namespace="com.cfl.mapper.AllowedServerMapper">
+        namespace="com.cfl.mapper.ServerMapper">
 
-    <resultMap id="AllowedServer" type="AllowedServer">
+    <resultMap id="Server" type="Server">
         <id property="serverIp" column="svr_ip" />
         <result property="serverName" column="svr_nm"/>
         <result property="serviceName" column="svc_nm"/>
         <result property="tenantId" column="tnnt_id"/>
     </resultMap>
 
-    <select id="selectAllowedServerByIpv4" resultMap="AllowedServer">
-        SELECT
-            *
-        FROM
-            cfl_allowed_server
-        WHERE
-            svr_ip = #{ipv4Address}
-    </select>
-
-    <select id="selectAllowedServer" resultMap="AllowedServer">
+    <select id="selectAllowedServer" resultMap="Server">
         SELECT
             *
         FROM
@@ -30,6 +21,13 @@
             svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}
             AND svr_ip = #{serverIp}
+    </select>
+
+    <select id="selectAllProvideServerIp">
+        SELECT
+            svr_ip
+        FROM
+            cfl_provide_server
     </select>
 
     <insert id="insertAllowedServer">
@@ -42,31 +40,45 @@
             , #{serviceName})
     </insert>
 
+    <insert id="insertProvideServer">
+        INSERT INTO
+            cfl_provide_server (svr_ip, svr_nm)
+        VALUE
+            (#{serverIp}
+            , #{serverName})
+    </insert>
+
     <update id="updateAllowedServer">
         UPDATE
             cfl_allowed_server
         SET
-            svr_ip = #{serverIp}
-            , tnnt_id = #{tenantId}
-            , svr_nm = #{serverName}
-            , svc_nm = #{serviceName}
+            svr_ip = #{server.serverIp}
+            , tnnt_id = #{server.tenantId}
+            , svr_nm = #{server.serverName}
+            , svc_nm = #{server.serviceName}
         WHERE
-            svr_ip = #{originalIp}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND svr_ip = #{serverIp}
     </update>
 
     <delete id="deleteAllowedServer">
         DELETE FROM
             cfl_allowed_server
         WHERE
-            svr_ip = #{serverIp}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND svr_ip = #{serverIp}
     </delete>
 
-    <select id="selectRegExpServerList" resultMap="AllowedServer">
+    <select id="selectRegExpServerList" resultMap="Server">
         SELECT
             *
         FROM
             cfl_allowed_server
         WHERE
             svr_ip LIKE '^%'
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
     </select>
 </mapper>

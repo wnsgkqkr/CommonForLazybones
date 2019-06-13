@@ -11,14 +11,14 @@ import java.util.Map;
 
 @Mapper
 public interface MappingMapper {
-    void insertAuthorityUser(@Param("user")User user, @Param("authorityId")String authorityId);
-    void deleteAuthorityUser(@Param("user")User user, @Param("authorityId")String authorityId);
-    void insertObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
-    void deleteObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
+    void insertAuthorityUser(@Param("authorityId")String authorityId, @Param("user")User user);
+    void deleteAuthorityUser(@Param("authorityId")String authorityId, @Param("user")User user);
+    void insertObjectAuthority(@Param("objectId")String objectId, @Param("authority")Authority authority);
+    void deleteObjectAuthority(@Param("objectId")String objectId, @Param("authority")Authority authority);
 
-    List<String> selectObjectAuthorityIds(CflObject object);
+    List<Authority> selectObjectAuthorities(CflObject object);
     List<Authority> selectUserAuthorities(User user);
     List<User> selectAuthorityUsers(Authority authority);
-    Map<String, List<String>> selectObjectIdAuthorityIdListMap(String serviceName, String tenantId);
+    Map<String, List<Authority>> selectObjectIdAuthoritiesMap(String serviceName, String tenantId);
     Map<String, List<String>> selectObjectIdSubObjectIdListMap(String serviceName, String tenantId);
 }

@@ -15,5 +15,5 @@ public class CflObject {
     private String serviceName;
     private String objectSequence;
     private Map<String, CflObject> subObjects;
-    private List<String> authorityIds;
+    private List<Authority> authorities;
 }

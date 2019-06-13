@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AllowedServer {
+public class Server {
     private String serverIp;
     private String serverName;
     private String tenantId;

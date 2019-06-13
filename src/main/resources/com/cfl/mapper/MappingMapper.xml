@@ -22,9 +22,9 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <insert id="insertUserAuthority">
+    <insert id="insertAuthorityUser">
         INSERT INTO
-            cfl_authority_user_mapping
+            cfl_authority_user_mapping (auth_seq, user_seq)
         VALUES(
             (SELECT
                 auth_seq
@@ -46,7 +46,7 @@
             )
     </insert>
 
-    <delete id="deleteUserAuthority">
+    <delete id="deleteAuthorityUser">
         DELETE FROM
             cfl_authority_user_mapping
         WHERE
@@ -72,17 +72,48 @@
     <insert id="insertObjectAuthority">
         INSERT INTO
             cfl_object_authority_mapping (auth_seq, objt_seq)
-        VALUE
-            (#{authority.authoritySequence}
-            , #{object.objectSequence})
+        VALUES(
+            (SELECT
+                auth_seq
+            FROM
+                cfl_authority
+            WHERE
+                svc_nm = #{authority.serviceName}
+                AND tnnt_id = #{authority.tenantId}
+                AND auth_id = #{authority.authorityId})
+            ,
+            (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{authority.serviceName}
+                AND tnnt_id = #{authority.tenantId}
+                AND objt_id =#{objectId})
+            )
     </insert>
 
     <delete id="deleteObjectAuthority">
         DELETE FROM
             cfl_object_authority_mapping
         WHERE
-            auth_seq = #{authority.authoritySequence}
-            AND objt_seq = #{object.objectSequence}
+            (SELECT
+                auth_seq
+            FROM
+                cfl_authority
+            WHERE
+                svc_nm = #{authority.serviceName}
+                AND tnnt_id = #{authority.tenantId}
+                AND auth_id = #{authority.authorityId})
+            AND
+            (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{authority.serviceName}
+                AND tnnt_id = #{authority.tenantId}
+                AND objt_id =#{objectId})
     </delete>
 
     <select id="selectObjectIdSubObjectIdListMap" resultType="Map">
@@ -104,9 +135,9 @@
 	        AND ob.tnnt_id = #{tenantId}
     </select>
 
-    <select id="selectObjectAuthorityIds">
+    <select id="selectObjectAuthorities" resultMap="Authority">
         SELECT
-	        auth.auth_id
+	        auth.*
         FROM
             cfl_object ob
             INNER JOIN
@@ -123,7 +154,7 @@
 	        AND ob.objt_id = #{objectId}
     </select>
 
-    <select id="selectUserAuthorities" resultType="Authority">
+    <select id="selectUserAuthorities" resultMap="Authority">
         SELECT
 	        auth.*
         FROM
@@ -142,7 +173,7 @@
 	        AND user.user_id = #{userId}
     </select>
 
-    <select id="selectAuthorityUsers" resultType="User">
+    <select id="selectAuthorityUsers" resultMap="User">
         SELECT
 	        user.*
         FROM
@@ -161,10 +192,10 @@
 	        AND auth.auth_id = #{authorityId}
     </select>
 
-    <select id="selectObjectIdAuthorityIdListMap" resultType="Map">
+    <select id="selectObjectIdAuthoritiesMap" resultType="Map">
         SELECT
 	        ob.objt_id
-	        ,auth.auth_id
+	        ,auth.*
         FROM
             cfl_object ob
             INNER JOIN
