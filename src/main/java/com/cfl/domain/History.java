@@ -15,4 +15,6 @@ public class History {
     String serviceName;
     String tenantId;
     String registerServerIp;
+    String requestMethod;
+    String requestUrl;
 }

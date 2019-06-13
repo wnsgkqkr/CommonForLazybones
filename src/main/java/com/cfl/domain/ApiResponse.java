@@ -28,7 +28,7 @@ public class ApiResponse {
         return body;
     }
 
-    private class ApiResponseHeader {
+    public class ApiResponseHeader {
         private Boolean isSuccessful;
         private Integer resultCode;
         private String resultMessage;

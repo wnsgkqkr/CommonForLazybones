@@ -56,14 +56,18 @@
             , svc_nm = #{serviceName}
             , auth_type = #{authorityType}
         WHERE
-            auth_seq = #{authoritySequence}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND auth_id = #{authorityId}
     </update>
 
     <delete id="deleteAuthority">
         DELETE FROM
             cfl_authority
         WHERE
-            auth_seq = #{authoritySequence}
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND auth_id = #{authorityId}
     </delete>
 
 </mapper>

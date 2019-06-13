@@ -24,18 +24,49 @@
 
     <insert id="insertUserAuthority">
         INSERT INTO
-            cfl_authority_user_mapping (auth_seq, user_seq)
-        VALUES
-            (#{authority.authoritySequence}
-            , #{user.userSequence})
+            cfl_authority_user_mapping
+        VALUES(
+            (SELECT
+                auth_seq
+            FROM
+                cfl_authority
+            WHERE
+                svc_nm = #{user.serviceName}
+                AND tnnt_id = #{user.tenantId}
+                AND auth_id = #{authorityId})
+            ,
+            (SELECT
+                user_seq
+            FROM
+                cfl_user
+            WHERE
+                svc_nm = #{user.serviceName}
+                AND tnnt_id = #{user.tenantId}
+                AND user_id =#{user.userId})
+            )
     </insert>
 
     <delete id="deleteUserAuthority">
         DELETE FROM
             cfl_authority_user_mapping
         WHERE
-            auth_seq = #{authority.authoritySequence}
-            AND user_seq = #{user.userSequence}
+            (SELECT
+                auth_seq
+            FROM
+                cfl_authority
+            WHERE
+                svc_nm = #{user.serviceName}
+                AND tnnt_id = #{user.tenantId}
+                AND auth_id = #{authorityId})
+            AND
+            (SELECT
+                user_seq
+            FROM
+                cfl_user
+            WHERE
+                svc_nm = #{user.serviceName}
+                AND tnnt_id = #{user.tenantId}
+                AND user_id =#{user.userId})
     </delete>
 
     <insert id="insertObjectAuthority">

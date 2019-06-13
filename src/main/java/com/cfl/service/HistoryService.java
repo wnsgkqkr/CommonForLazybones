@@ -15,24 +15,26 @@ public class HistoryService {
     @Autowired
     private HistoryMapper historyMapper;
 
-    public History createHistory(ApiRequest request, String returnMessage){
+    public History createHistory(String serviceName, String tenantId, Object requestObject, String returnMessage){
         HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 
-        History history = setHistory(request, returnMessage, httpRequest);
+        History history = setHistory(serviceName, tenantId, requestObject, returnMessage, httpRequest);
         if(!isGetMethod(httpRequest)) {
             historyMapper.insertHistory(history);
         }
         return history;
     }
 
-    private History setHistory(ApiRequest request, String returnMessage, HttpServletRequest httpRequest){
+    private History setHistory(String serviceName, String tenantId, Object requestObject, String returnMessage, HttpServletRequest httpRequest){
         History history = new History();
 
         history.setRegisterServerIp(httpRequest.getRemoteAddr());
-        history.setRequestContents(httpRequest.getRequestURI() + ' ' + httpRequest.getMethod());
+        history.setRequestContents(requestObject.toString());
+        history.setRequestMethod(httpRequest.getMethod());
+        history.setRequestUrl(httpRequest.getRequestURI());
         history.setReturnMessage(returnMessage);
-        history.setServiceName(request.getServiceName());
-        history.setTenantId(request.getTenantId());
+        history.setServiceName(serviceName);
+        history.setTenantId(tenantId);
         return history;
     }
 

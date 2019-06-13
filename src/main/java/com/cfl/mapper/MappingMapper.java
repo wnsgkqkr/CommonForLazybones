@@ -11,8 +11,8 @@ import java.util.Map;
 
 @Mapper
 public interface MappingMapper {
-    void insertUserAuthority(@Param("user")User user, @Param("authority")Authority authority);
-    void deleteUserAuthority(@Param("user")User user, @Param("authority")Authority authority);
+    void insertAuthorityUser(@Param("user")User user, @Param("authorityId")String authorityId);
+    void deleteAuthorityUser(@Param("user")User user, @Param("authorityId")String authorityId);
     void insertObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
     void deleteObjectAuthority(@Param("object")CflObject object, @Param("authority")Authority authority);
 

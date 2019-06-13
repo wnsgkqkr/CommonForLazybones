@@ -1,98 +1,75 @@
 package com.cfl.controller;
 
-import com.cfl.domain.ApiRequest;
 import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Authority;
 import com.cfl.domain.User;
 import com.cfl.service.AuthorityService;
-import com.cfl.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/authority")
 public class AuthorityController {
     @Autowired
     private AuthorityService authorityService;
-    @Autowired
-    private CommonService commonService;
 
-    //add, remove, get users to authority
-    @PostMapping(value="/user")
-    public ApiResponse createAuthorityUser(@RequestBody ApiRequest requestObject){
-        try{
-            commonService.createUserAuthority(requestObject);
-            return commonService.successResult(requestObject, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
-    }
-    @DeleteMapping(value="/user")
-    public ApiResponse removeAuthorityUser(@RequestBody ApiRequest requestObject){
-        try{
-            commonService.removeUserAuthority(requestObject);
-            return commonService.successResult(requestObject, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
-    }
-    @GetMapping(value="/user")
-    public ApiResponse getAuthorityUsers(@RequestBody ApiRequest requestObject){
-        try{
-            List<User> userList = authorityService.getAuthorityUsers(requestObject);
-            return commonService.successResult(userList, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    private static final String AUTHORITY_URL_WITH_TENANT = "/{serviceName}/{tenantId}/authority/{authorityId}";
+    private static final String AUTHORITY_URL_WITHOUT_TENANT = "/{serviceName}/authority/{authorityId}";
+    private static final String AUTHORITY_MAPPING_USERS_URL_WITH_TENANT = "/{serviceName}/{tenantId}/authority/{authorityId}/user";
+    private static final String AUTHORITY_MAPPING_USERS_URL_WITHOUT_TENANT = "/{serviceName}/authority/{authorityId}/user";
+
+    @PostMapping(value = {AUTHORITY_MAPPING_USERS_URL_WITH_TENANT, AUTHORITY_MAPPING_USERS_URL_WITHOUT_TENANT})
+    public ApiResponse createAuthorityUserMapping(@PathVariable("serviceName") String serviceName,
+                                           @PathVariable("tenantId") String tenantId,
+                                           @PathVariable("authorityId") String authorityId,
+                                           @RequestBody List<User> requestUsers){ //TODO: add requester in Http header
+            return authorityService.createAuthorityUserMapping(serviceName, tenantId, authorityId, requestUsers);
     }
 
-    //add, update, remove, get authority
-    @PostMapping
-    public ApiResponse createAuthority(@RequestBody ApiRequest requestObject){
-        try{
-            Authority authority = authorityService.createData(requestObject);
-            return commonService.successResult(authority, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @DeleteMapping(value = {AUTHORITY_MAPPING_USERS_URL_WITH_TENANT, AUTHORITY_MAPPING_USERS_URL_WITHOUT_TENANT})
+    public ApiResponse removeAuthorityUserMapping(@PathVariable("serviceName") String serviceName,
+                                           @PathVariable("tenantId") String tenantId,
+                                           @PathVariable("authorityId") String authorityId,
+                                           @RequestBody List<User> requestUsers){
+            return authorityService.removeAuthorityUserMapping(serviceName, tenantId, authorityId, requestUsers);
     }
-    @PutMapping
-    public ApiResponse modifyAuthority(@RequestBody ApiRequest requestObject){
-        try{
-            Authority authority = authorityService.modifyData(requestObject);
-            return commonService.successResult(authority, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @GetMapping(value = {AUTHORITY_MAPPING_USERS_URL_WITH_TENANT, AUTHORITY_MAPPING_USERS_URL_WITHOUT_TENANT})
+    public ApiResponse getAuthorityUserMapping(@PathVariable("serviceName") String serviceName,
+                                         @PathVariable("tenantId") String tenantId,
+                                         @PathVariable("authorityId") String authorityId){
+            return authorityService.getAuthorityUserMapping(serviceName, tenantId, authorityId);
     }
-    @DeleteMapping
-    public ApiResponse removeAuthority(@RequestBody ApiRequest requestObject){
-        try{
-            Authority authority = authorityService.removeData(requestObject);
-            return commonService.successResult(authority, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+
+    @PostMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
+    public ApiResponse createAuthority(@PathVariable("serviceName") String serviceName,
+                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable("authorityId") String authorityId,
+                                       @RequestBody Authority authority){
+            return authorityService.createAuthority(serviceName, tenantId, authorityId, authority);
     }
-    @GetMapping
-    public ApiResponse getAuthority(@RequestBody ApiRequest requestObject){
-        try{
-            Authority authority = authorityService.getData(requestObject);
-            return commonService.successResult(authority, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @PutMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
+    public ApiResponse modifyAuthority(@PathVariable("serviceName") String serviceName,
+                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable("authorityId") String authorityId,
+                                       @RequestBody Authority authority){
+            return authorityService.modifyAuthority(serviceName, tenantId, authorityId, authority);
     }
-    @GetMapping(value="/authorities")
-    public ApiResponse getAuthorities(@RequestBody ApiRequest requestObject){
-        try{
-            List<Authority> authorityList = authorityService.getTenantAuthorities(requestObject);
-            return commonService.successResult(authorityList, requestObject);
-        } catch (Exception e){
-            return commonService.failResult(e);
-        }
+    @DeleteMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
+    public ApiResponse removeAuthority(@PathVariable("serviceName") String serviceName,
+                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable("authorityId") String authorityId) {
+            return authorityService.removeAuthority(serviceName, tenantId, authorityId);
+    }
+    @GetMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
+    public ApiResponse getAuthority(@PathVariable("serviceName") String serviceName,
+                                    @PathVariable("tenantId") String tenantId,
+                                    @PathVariable("authorityId") String authorityId){
+            return authorityService.getAuthority(serviceName, tenantId, authorityId);
+    }
+    @GetMapping(value = {"/{serviceName}/{tenantId}", "/{serviceName}"})
+    public ApiResponse getTenantAuthorities(@PathVariable("serviceName") String serviceName,
+                                            @PathVariable("tenantId") String tenantId){
+            return authorityService.getTenantAuthorities(serviceName, tenantId);
     }
 }

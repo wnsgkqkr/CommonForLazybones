@@ -17,10 +17,9 @@
 
     <insert id="insertHistory">
         INSERT INTO
-            cfl_history (hist_id, req_cont, rtrn_msg, actn_ymdt, tnnt_id, svc_nm, regr_svr_ip)
+            cfl_history (req_cont, rtrn_msg, actn_ymdt, tnnt_id, svc_nm, regr_svr_ip)
         VALUE
-            (#{historyId}
-            , #{requestContents}
+            (#{requestContents}
             , #{returnMessage}
             , CURRENT_TIMESTAMP()
             , #{tenantId}
