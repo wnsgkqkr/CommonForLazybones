@@ -51,7 +51,7 @@ public class AuthorityService{
         }
     }
     public ApiResponse removeAuthority(String serviceName, String tenantId, String authorityId) {
-        try {
+        try { // TODO 삭제처리 할 경우 매핑도 삭제하게 처리?
             Authority authority = setAuthority(serviceName, tenantId, authorityId, new Authority());
             authorityMapper.deleteAuthority(authority);
             cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());

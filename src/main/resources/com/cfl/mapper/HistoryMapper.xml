@@ -17,14 +17,16 @@
 
     <insert id="insertHistory">
         INSERT INTO
-            cfl_history (req_cont, rtrn_msg, actn_ymdt, tnnt_id, svc_nm, regr_svr_ip)
+            cfl_history (req_cont, rtrn_msg, actn_ymdt, tnnt_id, svc_nm, regr_svr_ip, req_metd, req_url)
         VALUE
             (#{requestContents}
             , #{returnMessage}
             , CURRENT_TIMESTAMP()
             , #{tenantId}
             , #{serviceName}
-            , #{registerServerIp})
+            , #{registerServerIp}
+            , #{requestMethod}
+            , #{requestUrl})
     </insert>
 
 </mapper>
