@@ -16,27 +16,27 @@ public class NetworkAclController {
     
     @PostMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})
     public ApiResponse createNetworkAcl(@PathVariable("serviceName") String serviceName,
-                                        @PathVariable("tenantId") String tenantId,
+                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @PathVariable("ip") String serverIp,
                                         @RequestBody Server server) {
         return networkService.createNetworkAcl(serviceName, tenantId, serverIp, server);
     }
     @PutMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})
     public ApiResponse modifyNetworkAcl(@PathVariable("serviceName") String serviceName,
-                                        @PathVariable("tenantId") String tenantId,
+                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @PathVariable("ip") String serverIp,
                                         @RequestBody Server server) {
         return networkService.modifyNetworkAcl(serviceName, tenantId, serverIp, server);
     }
     @DeleteMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})
     public ApiResponse deleteNetworkAcl(@PathVariable("serviceName") String serviceName,
-                                        @PathVariable("tenantId") String tenantId,
+                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @PathVariable("ip") String serverIp) {
         return networkService.deleteNetworkAcl(serviceName, tenantId, serverIp);
     }
     @GetMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})
     public ApiResponse getNetworkAcl(@PathVariable("serviceName") String serviceName,
-                                        @PathVariable("tenantId") String tenantId,
+                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @PathVariable("ip") String serverIp) {
         return networkService.getNetworkAcl(serviceName, tenantId, serverIp);
     }

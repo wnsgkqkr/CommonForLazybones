@@ -16,7 +16,7 @@ public class CodeController {
 
     @PostMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse createCode(@PathVariable("serviceName") String serviceName,
-                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable(name = "tenantId", required = false) String tenantId,
                                   @PathVariable("codeId") String codeId,
                                   @RequestBody Code code) {
         return codeService.createCode(serviceName, tenantId, codeId, code);
@@ -24,7 +24,7 @@ public class CodeController {
 
     @PutMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse modifyCode(@PathVariable("serviceName") String serviceName,
-                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable(name = "tenantId", required = false) String tenantId,
                                   @PathVariable("codeId") String codeId,
                                   @RequestBody Code code) {
         return codeService.modifyCode(serviceName, tenantId, codeId, code);
@@ -32,14 +32,14 @@ public class CodeController {
 
     @DeleteMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse removeCode(@PathVariable("serviceName") String serviceName,
-                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable(name = "tenantId", required = false) String tenantId,
                                   @PathVariable("codeId") String codeId) {
         return codeService.removeCode(serviceName, tenantId, codeId);
     }
 
     @GetMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse getCode(@PathVariable("serviceName") String serviceName,
-                               @PathVariable("tenantId") String tenantId,
+                               @PathVariable(name = "tenantId", required = false) String tenantId,
                                @PathVariable("codeId") String codeId) {
         return codeService.getCode(serviceName, tenantId, codeId);
     }

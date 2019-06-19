@@ -15,7 +15,7 @@ public class CacheController {
 
     @RequestMapping(value = "{serviceName}/{tenantId}/user/cache")
     public ApiResponse clearTenantUserAuthorityCache(@PathVariable("serviceName") String serviceName,
-                                                     @PathVariable("tenantId") String tenantId) {
+                                                     @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.clearUserAuthorityTenantCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/user/cache")
@@ -29,7 +29,7 @@ public class CacheController {
 
     @RequestMapping(value = "{serviceName}/{tenantId}/authority/cache")
     public ApiResponse clearTenantAuthorityUserCache(@PathVariable("serviceName") String serviceName,
-                                                     @PathVariable("tenantId") String tenantId) {
+                                                     @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.clearUserAuthorityTenantCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/authority/cache")
@@ -43,7 +43,7 @@ public class CacheController {
 
     @RequestMapping(value = "{serviceName}/{tenantId}/object/cache")
     public ApiResponse refreshTenantObjectCache(@PathVariable("serviceName") String serviceName,
-                                                @PathVariable("tenantId") String tenantId) {
+                                                @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.refreshTenantObjectCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/object/cache")
@@ -57,7 +57,7 @@ public class CacheController {
 
     @RequestMapping(value = "{serviceName}/{tenantId}/code/cache")
     public ApiResponse refreshTenantCodeCache(@PathVariable("serviceName") String serviceName,
-                                                @PathVariable("tenantId") String tenantId) {
+                                                @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.refreshTenantCodeCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/code/cache")

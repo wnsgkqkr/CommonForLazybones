@@ -18,14 +18,14 @@ public class UserController {
 
     @GetMapping(value = {USER_MAPPING_AUTHORITIES_URL_WITH_TENANT, USER_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
     public ApiResponse getUserAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
-                                                @PathVariable("tenantId") String tenantId,
+                                                @PathVariable(name = "tenantId", required = false) String tenantId,
                                                 @PathVariable("userId") String userId) {
         return userService.getUserAuthoritiesMapping(serviceName, tenantId, userId);
     }
 
     @PostMapping(value = {USER_URL_WITH_TENANT, USER_URL_WITHOUT_TENANT})
     public ApiResponse createUser(@PathVariable("serviceName") String serviceName,
-                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable(name = "tenantId", required = false) String tenantId,
                                        @PathVariable("userId") String userId,
                                        @RequestBody User user) {
         return userService.createUser(serviceName, tenantId, userId, user);
@@ -33,7 +33,7 @@ public class UserController {
 
     @PutMapping(value = {USER_URL_WITH_TENANT, USER_URL_WITHOUT_TENANT})
     public ApiResponse modifyUser(@PathVariable("serviceName") String serviceName,
-                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable(name = "tenantId", required = false) String tenantId,
                                        @PathVariable("userId") String userId,
                                        @RequestBody User user) {
         return userService.modifyUser(serviceName, tenantId, userId, user);
@@ -41,14 +41,14 @@ public class UserController {
 
     @DeleteMapping(value = {USER_URL_WITH_TENANT, USER_URL_WITHOUT_TENANT})
     public ApiResponse removeUser(@PathVariable("serviceName") String serviceName,
-                                       @PathVariable("tenantId") String tenantId,
+                                       @PathVariable(name = "tenantId", required = false) String tenantId,
                                        @PathVariable("userId") String userId) {
         return userService.removeUser(serviceName, tenantId, userId);
     }
 
     @GetMapping(value = {USER_URL_WITH_TENANT, USER_URL_WITHOUT_TENANT})
     public ApiResponse getUser(@PathVariable("serviceName") String serviceName,
-                                  @PathVariable("tenantId") String tenantId,
+                                  @PathVariable(name = "tenantId", required = false) String tenantId,
                                   @PathVariable("userId") String userId) {
         return userService.getUser(serviceName, tenantId, userId);
     }
