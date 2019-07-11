@@ -210,4 +210,22 @@
             ob.svc_nm = #{serviceName}
 	        AND ob.tnnt_id = #{tenantId}
     </select>
+
+    <select id="isExistAuthorityUserMapping" resultType="boolean">
+        SELECT
+	        if(count(*) > 0, 'true', 'false')
+        FROM
+            cfl_user user
+            INNER JOIN
+                cfl_authority_user_mapping authm
+            ON
+                user.user_seq = authm.user_seq
+            INNER JOIN
+                cfl_authority auth
+            ON
+                authm.auth_seq = auth.auth_seq
+        WHERE
+           auth.auth_id = #{authorityId}
+           AND user.user_id = #{user.userId}
+    </select>
 </mapper>

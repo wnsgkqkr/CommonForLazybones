@@ -21,4 +21,6 @@ public interface MappingMapper {
     List<User> selectAuthorityUsers(Authority authority);
     Map<String, List<Authority>> selectObjectIdAuthoritiesMap(String serviceName, String tenantId);
     Map<String, List<String>> selectObjectIdSubObjectIdListMap(String serviceName, String tenantId);
+
+    boolean isExistAuthorityUserMapping(@Param("authorityId")String authorityId, @Param("user")User user);
 }

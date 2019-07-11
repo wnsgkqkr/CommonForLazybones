@@ -66,4 +66,9 @@ public class ObjectController {
                                     @PathVariable("objectId") String objectId) {
         return objectService.getObject(serviceName, tenantId, objectId);
     }
+    @GetMapping(value = {"/{serviceName}/{tenantId}/object", "/{serviceName}/object"})
+    public ApiResponse getTenantObjects(@PathVariable("serviceName") String serviceName,
+                                            @PathVariable(name = "tenantId", required = false) String tenantId) {
+        return objectService.getTenantObjects(serviceName, tenantId);
+    }
 }

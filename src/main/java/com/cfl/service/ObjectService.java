@@ -146,4 +146,37 @@ public class ObjectService {
 
         return object;
     }
+
+    public ApiResponse getTenantObjects(String serviceName, String tenantId) {
+        try {
+            CflObject cflObject = new CflObject();
+            cflObject.setServiceName(serviceName);
+            if (tenantId != null) {
+                cflObject.setTenantId(tenantId);
+            } else {
+                cflObject.setTenantId(Constant.DEFAULT_TENANT_ID);
+            }
+
+            Map<String, CflObject> objectMap = getObjectMapFromCache(cflObject);
+            if (objectMap != null) {
+                List<CflObject> tenantObjects = new ArrayList<>(objectMap.values());
+                return ApiResponseUtil.getSuccessApiResponse(tenantObjects);
+            } else {
+                List<CflObject> tenantObjects = cflObjectMapper.selectTenantObjects(serviceName, tenantId);
+                return ApiResponseUtil.getSuccessApiResponse(tenantObjects);
+            }
+        } catch (Exception e) {
+            return ApiResponseUtil.getFailureApiResponse();
+        }
+    }
+
+    private Map<String, CflObject> getObjectMapFromCache(CflObject cflObject) {
+        String serviceName = cflObject.getServiceName();
+
+        Map<String, Map<String, CflObject>> serviceNameMap = Cache.objectAuthorityCache.get(serviceName);
+        String tenantId = cflObject.getTenantId();
+        Map<String, CflObject> tenantIdMap = serviceNameMap.get(tenantId);
+
+        return tenantIdMap;
+    }
 }
