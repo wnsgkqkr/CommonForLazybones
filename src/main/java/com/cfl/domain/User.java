@@ -9,10 +9,10 @@ import java.util.Map;
 @Getter
 @Setter
 public class User {
+    private long userSequence;
     private String userId;
     private String userType;
     private String tenantId;
     private String serviceName;
-    private String userSequence;
     private List<Authority> userToAuthorities;
 }

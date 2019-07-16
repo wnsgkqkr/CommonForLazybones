@@ -9,6 +9,7 @@ public class ApiResponseUtil {
     public static final String MESSAGE_SUCCESS = "SUCCESS";
     public static final String MESSAGE_FAILURE = "FAILURE";
     public static final String MESSAGE_DUPLICATE = "DUPLICATE";
+    public static final String MESSAGE_MISSING_VALUE = "MISSING_VALUE";
 
     public static ApiResponse getSuccessApiResponse(Object successResult) {
         return new ApiResponse(true, HttpStatus.SC_OK, MESSAGE_SUCCESS, successResult);
@@ -19,5 +20,9 @@ public class ApiResponseUtil {
 
     public static ApiResponse getDuplicateApiResponse(Object duplicateResult) {
         return new ApiResponse(true, 211, MESSAGE_DUPLICATE, duplicateResult);
+    }
+
+    public static ApiResponse getMissingValueResponse() {
+        return new ApiResponse(false, 222, MESSAGE_MISSING_VALUE);
     }
 }

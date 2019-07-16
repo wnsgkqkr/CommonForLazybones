@@ -50,7 +50,7 @@
         DELETE FROM
             cfl_authority_user_mapping
         WHERE
-            (SELECT
+            auth_seq = (SELECT
                 auth_seq
             FROM
                 cfl_authority
@@ -59,7 +59,7 @@
                 AND tnnt_id = #{user.tenantId}
                 AND auth_id = #{authorityId})
             AND
-            (SELECT
+            user_seq = (SELECT
                 user_seq
             FROM
                 cfl_user
@@ -116,10 +116,10 @@
                 AND objt_id =#{objectId})
     </delete>
 
-    <select id="selectObjectIdSubObjectIdListMap" resultType="Map">
+    <select id="selectObjectIdAndSubObjectIdMapList" resultType="Map">
         SELECT
-	        ob.objt_id
-	        ,sob.objt_id AS sub_objt_id
+	        ob.objt_id AS objectId
+	        ,sob.objt_id AS subObjectId
         FROM
             cfl_object ob
             INNER JOIN
@@ -192,10 +192,15 @@
 	        AND auth.auth_id = #{authorityId}
     </select>
 
-    <select id="selectObjectIdAuthoritiesMap" resultType="Map">
+    <select id="selectObjectIdAndAuthorityMapList" resultType="Map">
         SELECT
-	        ob.objt_id
-	        ,auth.*
+	        ob.objt_id AS objectId
+	        , auth.auth_seq AS authoritySequence
+	        , auth.auth_id AS authorityId
+	        , auth.auth_nm AS authorityName
+	        , auth.auth_type AS authorityType
+	        , auth.tnnt_id AS tenantId
+	        , auth.svc_nm AS serviceName
         FROM
             cfl_object ob
             INNER JOIN
@@ -209,6 +214,29 @@
         WHERE
             ob.svc_nm = #{serviceName}
 	        AND ob.tnnt_id = #{tenantId}
+    </select>
+
+    <select id="selectAuthorityIdAndUserMapList" resultType="Map">
+        SELECT
+            auth.auth_id AS authorityId
+            , user.user_seq AS userSequence
+            , user.user_id AS userId
+            , user.user_type AS userType
+            , user.tnnt_id AS tenantId
+            , user.svc_nm AS serviceName
+        FROM
+            cfl_authority auth
+            INNER JOIN
+                cfl_authority_user_mapping aum
+            ON
+                auth.auth_seq = aum.auth_seq
+            INNER JOIN
+                cfl_user user
+            ON
+                user.user_seq = aum.user_seq
+        WHERE
+            auth.svc_nm = #{serviceName}
+            AND auth.tnnt_id = #{tenantId}
     </select>
 
     <select id="isExistAuthorityUserMapping" resultType="boolean">
@@ -227,5 +255,23 @@
         WHERE
            auth.auth_id = #{authorityId}
            AND user.user_id = #{user.userId}
+    </select>
+
+    <select id="isExistObjectAuthorityMapping" resultType="boolean">
+        SELECT
+	        if(count(*) > 0, 'true', 'false')
+        FROM
+            cfl_authority auth
+            INNER JOIN
+                cfl_object_authority_mapping oam
+            ON
+                auth.auth_seq = oam.auth_seq
+            INNER JOIN
+                cfl_object ob
+            ON
+                oam.objt_seq = ob.objt_seq
+        WHERE
+           ob.objt_id = #{objectId}
+           AND auth.auth_id = #{authority.authorityId}
     </select>
 </mapper>

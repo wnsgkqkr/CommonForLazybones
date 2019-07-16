@@ -102,7 +102,7 @@ public class NetworkService {
     }
 
     @PostConstruct
-    private void createProvideServer(){
+    private void createProvideServer() {
         Server provideServer = new Server();
         try {
             InetAddress ip = InetAddress.getLocalHost();
@@ -111,7 +111,7 @@ public class NetworkService {
             provideServer.setServiceName("CFL");
             provideServer.setTenantId(Constant.DEFAULT_TENANT_ID);
 
-            if(serverMapper.selectProvideServer(provideServer) == null) {
+            if (serverMapper.selectProvideServer(provideServer) == null) {
                 serverMapper.insertProvideServer(provideServer);
                 serverMapper.insertAllowedServer(provideServer);
             }
@@ -120,7 +120,7 @@ public class NetworkService {
         }
     }
 
-    public void sendProvideServersToInit(){
+    public void sendProvideServersToInit() {
         List<String> provideServerIpList = serverMapper.selectAllProvideServerIp();
 
         RestTemplate restTemplate = new RestTemplate();

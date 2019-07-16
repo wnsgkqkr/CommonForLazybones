@@ -32,7 +32,7 @@ public class UserService {
         try {
             user = setUser(serviceName, tenantId, userId, user);
             userMapper.insertUser(user);
-            cacheService.clearUserAuthorityTenantCache(serviceName, user.getTenantId());
+            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
@@ -45,7 +45,7 @@ public class UserService {
         try {
             user = setUser(serviceName, tenantId, userId, user);
             userMapper.updateUser(user);
-            cacheService.clearUserAuthorityTenantCache(serviceName, user.getTenantId());
+            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
@@ -58,7 +58,7 @@ public class UserService {
         try {
             User user = setUser(serviceName, tenantId, userId, new User());
             userMapper.deleteUser(user);
-            cacheService.clearUserAuthorityTenantCache(serviceName, user.getTenantId());
+            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;

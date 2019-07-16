@@ -16,7 +16,7 @@ public class ObjectController {
     
     private static final String OBJECT_URL_WITH_TENANT = "/{serviceName}/{tenantId}/object/{objectId}";
     private static final String OBJECT_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}";
-    private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT = "/{serviceName}/{tenantId}//object/{objectId}/authorities";
+    private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT = "/{serviceName}/{tenantId}/object/{objectId}/authorities";
     private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}/authorities";
 
     @PostMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
@@ -26,6 +26,7 @@ public class ObjectController {
                                              @RequestBody List<Authority> requestAuthorities) {
             return objectService.createObjectAuthoritiesMapping(serviceName, tenantId, objectId, requestAuthorities);
     }
+
     @DeleteMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
     public ApiResponse deleteObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
                                                       @PathVariable(name = "tenantId", required = false) String tenantId,
@@ -33,6 +34,7 @@ public class ObjectController {
                                                       @RequestBody List<Authority> requestAuthorities) {
         return objectService.removeObjectAuthoritiesMapping(serviceName, tenantId, objectId, requestAuthorities);
     }
+
     @GetMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
     public ApiResponse getObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
                                                       @PathVariable(name = "tenantId", required = false) String tenantId,
@@ -47,6 +49,7 @@ public class ObjectController {
                                     @RequestBody CflObject object) {
             return objectService.createObject(serviceName, tenantId, objectId, object);
     }
+
     @PutMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
     public ApiResponse modifyObject(@PathVariable("serviceName") String serviceName,
                                     @PathVariable(name = "tenantId", required = false) String tenantId,
@@ -54,21 +57,24 @@ public class ObjectController {
                                     @RequestBody CflObject object) {
         return objectService.modifyObject(serviceName, tenantId, objectId, object);
     }
+
     @DeleteMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
     public ApiResponse removeObject(@PathVariable("serviceName") String serviceName,
                                     @PathVariable(name = "tenantId", required = false) String tenantId,
                                     @PathVariable("objectId") String objectId) {
         return objectService.removeObject(serviceName, tenantId, objectId);
     }
+
     @GetMapping(value = {OBJECT_URL_WITH_TENANT, OBJECT_URL_WITHOUT_TENANT})
     public ApiResponse getObject(@PathVariable("serviceName") String serviceName,
                                     @PathVariable(name = "tenantId", required = false) String tenantId,
                                     @PathVariable("objectId") String objectId) {
         return objectService.getObject(serviceName, tenantId, objectId);
     }
+
     @GetMapping(value = {"/{serviceName}/{tenantId}/object", "/{serviceName}/object"})
     public ApiResponse getTenantObjects(@PathVariable("serviceName") String serviceName,
-                                            @PathVariable(name = "tenantId", required = false) String tenantId) {
+                                        @PathVariable(name = "tenantId", required = false) String tenantId) {
         return objectService.getTenantObjects(serviceName, tenantId);
     }
 }
