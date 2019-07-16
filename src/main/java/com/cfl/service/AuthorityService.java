@@ -3,9 +3,7 @@ package com.cfl.service;
 import com.cfl.cache.Cache;
 import com.cfl.domain.*;
 import com.cfl.mapper.AuthorityMapper;
-import com.cfl.mapper.MappingMapper;
 import com.cfl.util.ApiResponseUtil;
-import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,8 +16,6 @@ public class AuthorityService{
     @Autowired
     private AuthorityMapper authorityMapper;
     @Autowired
-    private MappingMapper mappingMapper;
-    @Autowired
     private UserService userService;
     @Autowired
     private CacheService cacheService;
@@ -28,6 +24,18 @@ public class AuthorityService{
     @Autowired
     private MappingService mappingService;
 
+    public List<Authority> getAllAuthorities() {
+        return authorityMapper.selectAllAuthorities();
+    }
+
+    public List<Authority> getServiceAuthorities(String serviceName) {
+        return authorityMapper.selectServiceAuthorities(serviceName);
+    }
+
+    public List<Authority> getTenantAuthorities(String serviceName, String tenantId) {
+        return authorityMapper.selectTenantAuthorities(serviceName, tenantId);
+    }
+
     public ApiResponse createAuthority(String serviceName, String tenantId, String authorityId, Authority authority) {
         try {
             authority.setServiceName(serviceName);
@@ -35,11 +43,12 @@ public class AuthorityService{
             authority.setAuthorityId(authorityId);
 
             authorityMapper.insertAuthority(authority);
-            cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());
+            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
         } catch (Exception e) { // TODO Exception 정해서 코드 정하고 넘겨주기
+            log.error("createAuthority fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
@@ -50,41 +59,51 @@ public class AuthorityService{
             authority.setAuthorityId(authorityId);
 
             authorityMapper.updateAuthority(serviceName, authority.getTenantId(), authorityId, authority);
-            cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());
+            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
         } catch (Exception e) { // TODO 실패도 히스토리추가(오류이후)
+            log.error("modifyAuthority fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
     public ApiResponse removeAuthority(String serviceName, String tenantId, String authorityId) {
-        try { // TODO 삭제처리 할 경우 매핑도 삭제하게 처리?
+        try {
             Authority authority = new Authority(serviceName, tenantId, authorityId);
+
+            // 권한 삭제 전 매핑 정보부터 우선 삭제 후 권한 삭제 진행
+            mappingService.removeAuthorityMapping(authority);
             authorityMapper.deleteAuthority(authority);
-            cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());
+
+            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
         } catch (Exception e) {
+            log.error("modifyAuthority fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
-    //get Authority from cache, if it doesn't exist in Cache then get Database and put cache
+
     public ApiResponse getAuthority(String serviceName, String tenantId, String authorityId){
         try {
             Authority authority = new Authority(serviceName, tenantId, authorityId);
-            Map<String, Authority> authorityMap = getAuthorityMapFromCache(authority);
-            Authority mapAuthority = authorityMap.get(authorityId);
 
-            if(mapAuthority != null) {
-                return ApiResponseUtil.getSuccessApiResponse(mapAuthority);
+            Authority authorityFromCache = Cache.authorityUserCache.get(serviceName).get(authority.getTenantId()).get(authorityId);
+
+            ApiResponse apiResponse;
+
+            // 캐시에 오브젝트가 없는 경우
+            if (authorityFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueResponse();
             } else {
-                authority = authorityMapper.selectAuthority(authority);
-                Cache.authorityUserCache.get(serviceName).get(authority.getTenantId()).put(authorityId, authority);
-                return ApiResponseUtil.getSuccessApiResponse(authority);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(authorityFromCache);
             }
+            historyService.createHistory(serviceName, authorityFromCache.getTenantId(), authorityFromCache, apiResponse.getHeader().getResultMessage());
+            return apiResponse;
         } catch (Exception e) {
+            log.error("getAuthority fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
@@ -106,7 +125,7 @@ public class AuthorityService{
                 }
             }
 
-            cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());
+            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
 
             ApiResponse apiResponse;
 
@@ -119,6 +138,7 @@ public class AuthorityService{
             historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, apiResponse.getHeader().getResultMessage());
             return apiResponse;
         } catch (Exception e) {
+            log.error("createAuthorityUsersMapping fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
@@ -128,80 +148,63 @@ public class AuthorityService{
             for (User requestUser : requestUsers) {
                 requestUser.setServiceName(serviceName);
                 requestUser.setTenantId(authority.getTenantId());
-                mappingMapper.deleteAuthorityUser(authorityId, requestUser);
+                mappingService.removeAuthorityUserMapping(authorityId, requestUser);
             }
-            cacheService.clearUserAuthorityTenantCache(serviceName, authority.getTenantId());
+            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestUsers);
             historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
         } catch (Exception e) {
+            log.error("removeAuthorityUsersMapping fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
 
-    //get UserList in Authority from cache, if it doesn't exist in Cache then get Database and put cache
     public ApiResponse getAuthorityUsersMapping(String serviceName, String tenantId, String authorityId) {
         try {
             Authority authority = new Authority(serviceName, tenantId, authorityId);
-            Map<String, Authority> authorityMap = getAuthorityMapFromCache(authority);
-            Authority mapAuthority = authorityMap.get(authorityId);
 
-            if (mapAuthority != null) {
-                return ApiResponseUtil.getSuccessApiResponse(mapAuthority.getAuthorityToUsers());
+            List<User> userList = Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId()).get(authority.getAuthorityId()).getAuthorityToUsers();
+
+            ApiResponse apiResponse;
+
+            // 캐시에 권한 유저리스트가 없는 경우
+            if (userList == null) {
+                apiResponse = ApiResponseUtil.getMissingValueResponse();
             } else {
-                List<User> userList = mappingMapper.selectAuthorityUsers(authority);
-                if (userList == null) {
-                    userList = Collections.emptyList();
-                }
-                authority.setAuthorityToUsers(userList);
-                Cache.authorityUserCache.get(serviceName).get(authority.getTenantId()).put(authority.getAuthorityId(), authority);
-                return ApiResponseUtil.getSuccessApiResponse(userList);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(userList);
             }
+
+            historyService.createHistory(serviceName, authority.getTenantId(), userList, apiResponse.getHeader().getResultMessage());
+            return apiResponse;
         } catch (Exception e) {
+            log.error("getAuthorityUsersMapping fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
 
-    public ApiResponse getTenantAuthorities(String serviceName, String tenantId) {
+    public ApiResponse getTenantAuthorityList(String serviceName, String tenantId) {
         try {
             Authority authority = new Authority(serviceName, tenantId);
-            Map<String, Authority> authorityMap = getAuthorityMapFromCache(authority);
-            if (authorityMap.size() != 0) {
+
+            Map<String, Authority> authorityMap = Cache.authorityUserCache.get(authority.getServiceName()).get(authority.getTenantId());
+
+            if (authorityMap != null) {
                 List<Authority> tenantAuthorities = new ArrayList<>(authorityMap.values());
                 return ApiResponseUtil.getSuccessApiResponse(tenantAuthorities);
             } else {
-                List<Authority> tenantAuthorities = authorityMapper.selectTenantAuthorities(authority);
-                for(Authority tenantAuthority : tenantAuthorities){
-                    Cache.authorityUserCache.get(serviceName).get(tenantId).put(tenantAuthority.getAuthorityId(), tenantAuthority);
-                }
+                List<Authority> tenantAuthorities = authorityMapper.selectTenantAuthorities(serviceName, tenantId);
                 return ApiResponseUtil.getSuccessApiResponse(tenantAuthorities);
             }
         } catch (Exception e) {
+            log.error("getTenantAuthorityList fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
-    }
-
-    private Map<String, Authority> getAuthorityMapFromCache(Authority authority) {
-        String serviceName = authority.getServiceName();
-        Map<String, Map<String, Authority>> serviceNameMap = Cache.authorityUserCache.get(serviceName);
-        if(serviceNameMap == null) {
-            serviceNameMap = new HashMap<>();
-            Cache.authorityUserCache.put(serviceName, serviceNameMap);
-        }
-
-        String tenantId = authority.getTenantId();
-        Map<String, Authority> tenantIdMap = serviceNameMap.get(tenantId);
-        if(tenantIdMap==null) {
-            tenantIdMap = new HashMap<>();
-            Cache.authorityUserCache.get(serviceName).put(tenantId,tenantIdMap);
-        }
-
-        return tenantIdMap;
     }
 
     public Authority checkExistAndCreateAuthority(Authority needCheckAuthority){
         Authority getAuthority = authorityMapper.selectAuthority(needCheckAuthority);
-        if(getAuthority != null) {
+        if (getAuthority != null) {
             return getAuthority;
         } else {
             authorityMapper.insertAuthority(needCheckAuthority);

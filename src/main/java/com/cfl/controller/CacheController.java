@@ -16,29 +16,29 @@ public class CacheController {
     @RequestMapping(value = "{serviceName}/{tenantId}/user/cache")
     public ApiResponse clearTenantUserAuthorityCache(@PathVariable("serviceName") String serviceName,
                                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
-        return cacheService.clearUserAuthorityTenantCache(serviceName, tenantId);
+        return cacheService.clearUserTenantCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/user/cache")
     public ApiResponse clearServiceUserAuthorityCache(@PathVariable("serviceName") String serviceName) {
-        return cacheService.clearUserAuthorityServiceCache(serviceName);
+        return cacheService.clearUserServiceCache(serviceName);
     }
     @RequestMapping(value = "/user/cache")
     public ApiResponse clearUserAuthorityCache() {
-        return cacheService.clearUserAuthorityCache();
+        return cacheService.clearUserCache();
     }
 
     @RequestMapping(value = "{serviceName}/{tenantId}/authority/cache")
     public ApiResponse clearTenantAuthorityUserCache(@PathVariable("serviceName") String serviceName,
                                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
-        return cacheService.clearUserAuthorityTenantCache(serviceName, tenantId);
+        return cacheService.refreshTenantAuthorityCache(serviceName, tenantId);
     }
     @RequestMapping(value = "{serviceName}/authority/cache")
     public ApiResponse clearServiceAuthorityUserCache(@PathVariable("serviceName") String serviceName) {
-        return cacheService.clearUserAuthorityServiceCache(serviceName);
+        return cacheService.refreshServiceAuthorityCache(serviceName);
     }
     @RequestMapping(value = "/authority/cache")
     public ApiResponse clearAuthorityUserCache() {
-        return cacheService.clearUserAuthorityCache();
+        return cacheService.createAuthorityCache();
     }
 
     @RequestMapping(value = "{serviceName}/{tenantId}/object/cache")
@@ -73,5 +73,4 @@ public class CacheController {
     public ApiResponse cacheInit(@RequestBody String serverIp){
         return cacheService.allCacheInit(serverIp);
     }
-
 }

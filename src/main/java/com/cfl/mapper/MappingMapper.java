@@ -4,23 +4,27 @@ import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
 import com.cfl.domain.User;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 public interface MappingMapper {
-    void insertAuthorityUser(@Param("authorityId")String authorityId, @Param("user")User user);
-    void deleteAuthorityUser(@Param("authorityId")String authorityId, @Param("user")User user);
-    void insertObjectAuthority(@Param("objectId")String objectId, @Param("authority")Authority authority);
-    void deleteObjectAuthority(@Param("objectId")String objectId, @Param("authority")Authority authority);
+    List<Map<String, String>> selectObjectIdAndSubObjectIdMapList(String serviceName, String tenantId);
+    List<Map<String, Object>> selectObjectIdAndAuthorityMapList(String serviceName, String tenantId);
+    List<Map<String, Object>> selectAuthorityIdAndUserMapList(String serviceName, String tenantId);
+
+    boolean isExistObjectAuthorityMapping(String objectId, Authority authority);
+    void insertObjectAuthority(String objectId, Authority authority);
+    void deleteObjectAuthority(String objectId, Authority authority);
+    void deleteObjectMapping(CflObject object);
+
+    boolean isExistAuthorityUserMapping(String authorityId, User user);
+    void insertAuthorityUser(String authorityId, User user);
+    void deleteAuthorityUser(String authorityId, User user);
+    void deleteAuthorityMapping(Authority authority);
 
     List<Authority> selectObjectAuthorities(CflObject object);
-    List<Authority> selectUserAuthorities(User user);
     List<User> selectAuthorityUsers(Authority authority);
-    Map<String, List<Authority>> selectObjectIdAuthoritiesMap(String serviceName, String tenantId);
-    Map<String, List<String>> selectObjectIdSubObjectIdListMap(String serviceName, String tenantId);
-
-    boolean isExistAuthorityUserMapping(@Param("authorityId")String authorityId, @Param("user")User user);
+    List<Authority> selectUserAuthorities(User user);
 }

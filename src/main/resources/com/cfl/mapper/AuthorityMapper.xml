@@ -14,6 +14,22 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
+    <select id="selectAllAuthorities" resultMap="Authority">
+        SELECT
+            *
+        FROM
+            cfl_authority
+    </select>
+
+    <select id="selectServiceAuthorities" resultMap="Authority">
+        SELECT
+            *
+        FROM
+            cfl_authority
+        WHERE
+            svc_nm = #{serviceName}
+    </select>
+
     <select id="selectTenantAuthorities" resultMap="Authority">
         SELECT
             *
@@ -69,6 +85,4 @@
             AND tnnt_id = #{tenantId}
             AND auth_id = #{authorityId}
     </delete>
-
 </mapper>
-

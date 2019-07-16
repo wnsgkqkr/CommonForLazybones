@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-        namespace="com.cfl.mapper.UserMapper">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cfl.mapper.UserMapper">
 
     <resultMap id="User" type="User">
         <id property="userSequence" column="user_seq" />
@@ -12,17 +9,6 @@
         <result property="tenantId" column="tnnt_id"/>
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
-
-    <select id="selectUser" resultMap="User">
-        SELECT
-            *
-        FROM
-            cfl_user
-        WHERE
-            user_id = #{userId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-    </select>
 
     <insert id="insertUser">
         INSERT INTO
@@ -56,5 +42,16 @@
             AND svc_nm = #{serviceName}
             AND tnnt_id = #{tenantId}
     </delete>
+
+    <select id="selectUser" resultMap="User">
+        SELECT
+            *
+        FROM
+            cfl_user
+        WHERE
+            user_id = #{userId}
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
 </mapper>
 

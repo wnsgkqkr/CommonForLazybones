@@ -1,61 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-        namespace="com.cfl.mapper.CflObjectMapper">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cfl.mapper.CflObjectMapper">
 
     <resultMap id="CflObject" type="CflObject">
         <id property="objectSequence" column="objt_seq" />
         <result property="objectId" column="objt_id"/>
         <result property="objectName" column="objt_nm"/>
+        <result property="objectType" column="objt_type"/>
         <result property="tenantId" column="tnnt_id"/>
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <select id="selectTenantObjects" resultMap="CflObject">
-        SELECT
-            *
-        FROM
-            cfl_object
-        WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-    </select>
-
-    <select id="selectServiceObjects" resultMap="CflObject">
-        SELECT
-            *
-        FROM
-            cfl_object
-        WHERE
-            svc_nm = #{serviceName}
-    </select>
-
-    <select id="selectAllObjects" resultMap="CflObject">
-        SELECT
-            *
-        FROM
-            cfl_object
-    </select>
-
-    <select id="selectObject" resultMap="CflObject">
-        SELECT
-            *
-        FROM
-            cfl_object
-        WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND objt_id = #{objectId}
-    </select>
-
     <insert id="insertObject">
         INSERT INTO
-            cfl_object (objt_id, objt_nm, tnnt_id, svc_nm)
+            cfl_object (objt_id, objt_nm, objt_type, tnnt_id, svc_nm)
         VALUE
             (#{objectId}
             , #{objectName}
+            , #{objectType}
             , #{tenantId}
             , #{serviceName})
     </insert>
@@ -66,6 +28,7 @@
         SET
             objt_id = #{object.objectId}
             , tnnt_id = #{object.tenantId}
+            , objt_type = #{object.objectType}
             , objt_nm = #{object.objectName}
             , svc_nm = #{object.serviceName}
         WHERE
@@ -83,4 +46,40 @@
             AND objt_id = #{objectId}
     </delete>
 
+    <select id="selectObject" resultMap="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+            AND objt_id = #{objectId}
+    </select>
+
+    <select id="selectAllObjects" resultMap="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+    </select>
+
+    <select id="selectServiceObjects" resultMap="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{serviceName}
+    </select>
+
+    <select id="selectTenantObjects" resultMap="CflObject">
+        SELECT
+            *
+        FROM
+            cfl_object
+        WHERE
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
 </mapper>

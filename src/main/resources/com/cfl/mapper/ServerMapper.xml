@@ -32,7 +32,7 @@
             svr_ip = #{serverIp}
     </select>
 
-    <select id="selectAllProvideServerIp">
+    <select id="selectAllProvideServerIp" resultType="String">
         SELECT
             svr_ip
         FROM

@@ -70,6 +70,6 @@ public class AuthorityController {
     @GetMapping(value = {"/{serviceName}/{tenantId}/authority", "/{serviceName}/authority"})
     public ApiResponse getTenantAuthorities(@PathVariable("serviceName") String serviceName,
                                             @PathVariable(name = "tenantId", required = false) String tenantId) {
-            return authorityService.getTenantAuthorities(serviceName, tenantId);
+            return authorityService.getTenantAuthorityList(serviceName, tenantId);
     }
 }
