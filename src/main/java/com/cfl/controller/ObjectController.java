@@ -75,6 +75,6 @@ public class ObjectController {
     @GetMapping(value = {"/{serviceName}/{tenantId}/object", "/{serviceName}/object"})
     public ApiResponse getTenantObjects(@PathVariable("serviceName") String serviceName,
                                         @PathVariable(name = "tenantId", required = false) String tenantId) {
-        return objectService.getTenantObjects(serviceName, tenantId);
+        return objectService.getTenantObjectList(serviceName, tenantId);
     }
 }

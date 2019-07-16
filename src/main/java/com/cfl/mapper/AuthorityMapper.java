@@ -2,7 +2,6 @@ package com.cfl.mapper;
 
 import com.cfl.domain.Authority;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,6 +13,6 @@ public interface AuthorityMapper {
     Authority selectAuthority(Authority authority);
 
     void insertAuthority(Authority authority);
-    void updateAuthority(String serviceName, String tenantId, String authorityId, @Param("authority") Authority authority);
+    void updateAuthority(String serviceName, String tenantId, String authorityId, Authority authority);
     void deleteAuthority(Authority authority);
 }

@@ -3,14 +3,11 @@ package com.cfl.service;
 import com.cfl.cache.Cache;
 import com.cfl.domain.*;
 import com.cfl.mapper.CflObjectMapper;
-import com.cfl.mapper.MappingMapper;
 import com.cfl.util.ApiResponseUtil;
-import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Slf4j
@@ -19,8 +16,6 @@ public class ObjectService {
     @Autowired
     private CflObjectMapper cflObjectMapper;
     @Autowired
-    private MappingMapper mappingMapper;
-    @Autowired
     private AuthorityService authorityService;
     @Autowired
     private CacheService cacheService;
@@ -28,6 +23,18 @@ public class ObjectService {
     private HistoryService historyService;
     @Autowired
     private MappingService mappingService;
+
+    public List<CflObject> getAllObjects() {
+        return cflObjectMapper.selectAllObjects();
+    }
+
+    public List<CflObject> getServiceObjects(String serviceName) {
+        return cflObjectMapper.selectServiceObjects(serviceName);
+    }
+
+    public List<CflObject> getTenantObjects(String serviceName, String tenantId) {
+        return cflObjectMapper.selectTenantObjects(serviceName, tenantId);
+    }
 
     public ApiResponse createObject(String serviceName, String tenantId, String objectId, CflObject object) {
         try {
@@ -67,7 +74,10 @@ public class ObjectService {
         try {
             CflObject object = new CflObject(serviceName, tenantId, objectId);
 
+            // 오브젝트 삭제 전 매핑 정보부터 우선 삭제 후 오브젝트 삭제 진행
+            mappingService.removeObjectMapping(object);
             cflObjectMapper.deleteObject(object);
+
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
             historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse.getHeader().getResultMessage());
@@ -141,7 +151,7 @@ public class ObjectService {
             for (Authority requestAuthority : requestAuthorities) {
                 requestAuthority.setServiceName(serviceName);
                 requestAuthority.setTenantId(object.getTenantId());
-                mappingMapper.deleteObjectAuthority(objectId, requestAuthority);
+                mappingService.removeObjectAuthorityMapping(objectId, requestAuthority);
             }
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
@@ -176,7 +186,7 @@ public class ObjectService {
         }
     }
 
-    public ApiResponse getTenantObjects(String serviceName, String tenantId) {
+    public ApiResponse getTenantObjectList(String serviceName, String tenantId) {
         try {
             CflObject cflObject = new CflObject(serviceName, tenantId);
 
@@ -189,7 +199,7 @@ public class ObjectService {
                 return ApiResponseUtil.getSuccessApiResponse(tenantObjects);
             }
         } catch (Exception e) {
-            log.error("getTenantObjects fail", e);
+            log.error("getTenantObjectList fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }

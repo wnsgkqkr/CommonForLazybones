@@ -2,10 +2,7 @@ package com.cfl.service;
 
 import com.cfl.cache.Cache;
 import com.cfl.domain.*;
-import com.cfl.mapper.AuthorityMapper;
-import com.cfl.mapper.CflObjectMapper;
 import com.cfl.mapper.CodeMapper;
-import com.cfl.mapper.MappingMapper;
 import com.cfl.util.ApiResponseUtil;
 import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +16,14 @@ import java.util.*;
 @Service
 public class CacheService {
     @Autowired
-    private NetworkService networkService;
+    private ObjectService objectService;
     @Autowired
-    private CflObjectMapper cflObjectMapper;
+    private AuthorityService authorityService;
+    @Autowired
+    private MappingService mappingService;
+    // todo 서비스로 대체
     @Autowired
     private CodeMapper codeMapper;
-    @Autowired
-    private MappingMapper mappingMapper;
-    @Autowired
-    private AuthorityMapper authorityMapper;
-
 
     public ApiResponse allCacheInit(String serverIp){
         try {
@@ -46,9 +41,12 @@ public class CacheService {
     @PostConstruct
     public ApiResponse createObjectCache() {
         try {
-            List<CflObject> objectList = cflObjectMapper.selectAllObjects();
+            List<CflObject> objectList = objectService.getAllObjects();
             Map<String, Map<String, Map<String, CflObject>>> temporaryObjectCache = getObjectMap(objectList);
-            Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryObjectCache);
+            synchronized (Cache.objectAuthorityCache) {
+                Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryObjectCache);
+            }
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("createObjectCache fail", e);
@@ -107,8 +105,8 @@ public class CacheService {
                         Iterator<String> objectKeyIterator = objectKeySet.iterator();
 
                         // 서브 오브젝트 맵핑 정보 및 권한 매핑 정보 세팅
-                        List<Map<String, String>> objectIdAndSubObjectIdMapList = mappingMapper.selectObjectIdAndSubObjectIdMapList(serviceName, tenantId);
-                        List<Map<String, Object>> objectIdAndAuthorityMapList = mappingMapper.selectObjectIdAndAuthorityMapList(serviceName, tenantId);
+                        List<Map<String, String>> objectIdAndSubObjectIdMapList = mappingService.getObjectIdAndSubObjectIdMapList(serviceName, tenantId);
+                        List<Map<String, Object>> objectIdAndAuthorityMapList = mappingService.getObjectIdAndAuthorityMapList(serviceName, tenantId);
 
                         // 오브젝트 아이디로 반복문을 돌며 서브 오브젝트와 매핑된 권한 리스트를 오브젝트에 넣어준다.
                         while (objectKeyIterator.hasNext()) {
@@ -183,16 +181,20 @@ public class CacheService {
 
     public ApiResponse refreshTenantObjectCache(String serviceName, String tenantId) {
         try {
-            List<CflObject> objectList = cflObjectMapper.selectTenantObjects(serviceName, tenantId);
-            Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjectMap(objectList);
-            Map<String, Map<String, Map<String, CflObject>>> toBeChangedTenantMap = addSubObjectsAndAuthorities(temporaryCache);
+            List<CflObject> objectList = objectService.getTenantObjects(serviceName, tenantId);
+            Map<String, Map<String, Map<String, CflObject>>> objectMap = getObjectMap(objectList);
+            Map<String, Map<String, Map<String, CflObject>>> toBeChangedTenantMap = addSubObjectsAndAuthorities(objectMap);
 
             // 캐시 안에 기존 테넌트 맵 지우고 새로운 테넌트 맵 저장
-            Map<String, Map<String, CflObject>> cacheServiceMap = Cache.objectAuthorityCache.get(serviceName);
-            cacheServiceMap.remove(tenantId);
-            cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
+            Map<String, Map<String, Map<String, CflObject>>> temporaryCache = Cache.objectAuthorityCache;
+            Map<String, Map<String, CflObject>> cacheServiceMap = temporaryCache.get(serviceName);
 
-//            networkService.sendProvideServersToInit();
+            synchronized (Cache.objectAuthorityCache) {
+                cacheServiceMap.remove(tenantId);
+                cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
+            }
+
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("refreshTenantObjectCache fail", e);
@@ -202,15 +204,17 @@ public class CacheService {
 
     public ApiResponse refreshServiceObjectCache(String serviceName) {
         try {
-            List<CflObject> objectList = cflObjectMapper.selectServiceObjects(serviceName);
-            Map<String, Map<String, Map<String, CflObject>>> temporaryCache = getObjectMap(objectList);
-            Map<String, Map<String, Map<String, CflObject>>> toBeChangedServiceMap = addSubObjectsAndAuthorities(temporaryCache);
+            List<CflObject> objectList = objectService.getServiceObjects(serviceName);
+            Map<String, Map<String, Map<String, CflObject>>> objectMap = getObjectMap(objectList);
+            Map<String, Map<String, Map<String, CflObject>>> toBeChangedServiceMap = addSubObjectsAndAuthorities(objectMap);
 
             // 캐시 안에 기존 서비스 맵 지우고 새로운 서비스 맵 저장
-            Cache.objectAuthorityCache.remove(serviceName);
-            Cache.objectAuthorityCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
+            synchronized (Cache.objectAuthorityCache) {
+                Cache.objectAuthorityCache.remove(serviceName);
+                Cache.objectAuthorityCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
+            }
 
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("refreshServiceObjectCache fail", e);
@@ -221,9 +225,10 @@ public class CacheService {
     @PostConstruct
     public ApiResponse createAuthorityCache() {
         try {
-            List<Authority> authorityList = authorityMapper.selectAllAuthorities();
+            List<Authority> authorityList = authorityService.getAllAuthorities();
             Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
             Cache.authorityUserCache = addUsers(temporaryAuthorityCache);
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("createAuthorityCache fail", e);
@@ -282,7 +287,7 @@ public class CacheService {
                         Iterator<String> authorityKeyIterator = authorityKeySet.iterator();
 
                         // 유저 맵핑 세팅
-                        List<Map<String, Object>> authorityIdAndUserMapList = mappingMapper.selectAuthorityIdAndUserMapList(serviceName, tenantId);
+                        List<Map<String, Object>> authorityIdAndUserMapList = mappingService.getAuthorityIdAndUserMapList(serviceName, tenantId);
 
                         // 권한 아이디로 반복문을 돌며 유저 리스트를 권한에 넣어준다.
                         while (authorityKeyIterator.hasNext()) {
@@ -329,16 +334,19 @@ public class CacheService {
 
     public ApiResponse refreshTenantAuthorityCache(String serviceName, String tenantId) {
         try {
-            List<Authority> authorityList = authorityMapper.selectTenantAuthorities(serviceName, tenantId);
+            List<Authority> authorityList = authorityService.getTenantAuthorities(serviceName, tenantId);
             Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
             Map<String, Map<String, Map<String, Authority>>> toBeChangedTenantMap = addUsers(temporaryAuthorityCache);
 
             // 캐시 안에 기존 테넌트 맵 지우고 새로운 테넌트 맵 저장
             Map<String, Map<String, Authority>> cacheServiceMap = Cache.authorityUserCache.get(serviceName);
-            cacheServiceMap.remove(tenantId);
-            cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
 
-//            networkService.sendProvideServersToInit();
+            synchronized (Cache.authorityUserCache) {
+                cacheServiceMap.remove(tenantId);
+                cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
+            }
+
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("refreshTenantAuthorityCache fail", e);
@@ -348,15 +356,17 @@ public class CacheService {
 
     public ApiResponse refreshServiceAuthorityCache(String serviceName) {
         try {
-            List<Authority> authorityList = authorityMapper.selectServiceAuthorities(serviceName);
+            List<Authority> authorityList = authorityService.getServiceAuthorities(serviceName);
             Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
             Map<String, Map<String, Map<String, Authority>>> toBeChangedServiceMap = addUsers(temporaryAuthorityCache);
 
             // 캐시 안에 기존 서비스 맵 지우고 새로운 서비스 맵 저장
-            Cache.authorityUserCache.remove(serviceName);
-            Cache.authorityUserCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
+            synchronized (Cache.authorityUserCache) {
+                Cache.authorityUserCache.remove(serviceName);
+                Cache.authorityUserCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
+            }
 
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("refreshServiceAuthorityCache fail", e);
@@ -369,7 +379,7 @@ public class CacheService {
             synchronized (Cache.userAuthorityCache) {
                 Cache.userAuthorityCache.clear();
             }
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.userAuthorityCache);
         } catch (Exception e) {
             log.error("clearUserCache fail", e);
@@ -384,7 +394,7 @@ public class CacheService {
                     Cache.userAuthorityCache.get(serviceName).clear();
                 }
             }
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.userAuthorityCache);
         } catch (Exception e) {
             log.error("clearUserServiceCache fail", e);
@@ -404,7 +414,7 @@ public class CacheService {
                     }
                 }
             }
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(new Object());
         } catch (Exception e) {
             log.error("clearUserTenantCache fail", e);
@@ -418,6 +428,7 @@ public class CacheService {
         try {
             List<Code> codeList = codeMapper.selectAllCodes();
             Cache.codeCache = getCodes(codeList);
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("createCodeCache fail", e);
@@ -458,7 +469,7 @@ public class CacheService {
             List<Code> codeList = codeMapper.selectTenantCodes(serviceName, tenantId);
             // TODO 기존 캐시를 지워버리기 떄문에 수정 필요
             Cache.codeCache = getCodes(codeList);
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("refreshTenantCodeCache fail", e);
@@ -470,7 +481,7 @@ public class CacheService {
             List<Code> codeList = codeMapper.selectServiceCodes(serviceName);
             // TODO 기존 캐시를 지워버리기 떄문에 수정 필요
             Cache.codeCache = getCodes(codeList);
-//            networkService.sendProvideServersToInit();
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("refreshServiceCodeCache fail", e);
