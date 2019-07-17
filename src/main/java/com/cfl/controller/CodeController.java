@@ -43,4 +43,10 @@ public class CodeController {
                                @PathVariable("codeId") String codeId) {
         return codeService.getCode(serviceName, tenantId, codeId);
     }
+
+    @GetMapping(value = {"/{serviceName}/{tenantId}/code", "/{serviceName}/code"})
+    public ApiResponse getTenantCodes(@PathVariable("serviceName") String serviceName,
+                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
+        return codeService.getTenantCodeList(serviceName, tenantId);
+    }
 }

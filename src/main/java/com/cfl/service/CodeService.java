@@ -8,6 +8,8 @@ import com.cfl.util.ApiResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -115,6 +117,24 @@ public class CodeService{
             return apiResponse;
         } catch (Exception e) {
             log.error("getCode fail", e);
+            return ApiResponseUtil.getFailureApiResponse();
+        }
+    }
+
+    public ApiResponse getTenantCodeList(String serviceName, String tenantId) {
+        try {
+            Code code = new Code(serviceName, tenantId);
+
+            Map<String, Code> codeMap = Cache.codeCache.get(code.getServiceName()).get(code.getTenantId());
+            if (codeMap != null) {
+                List<Code> tenantCodes = new ArrayList<>(codeMap.values());
+                return ApiResponseUtil.getSuccessApiResponse(tenantCodes);
+            } else {
+                List<Code> tenantCodes = codeMapper.selectTenantCodes(serviceName, tenantId);
+                return ApiResponseUtil.getSuccessApiResponse(tenantCodes);
+            }
+        } catch (Exception e) {
+            log.error("getTenantCodeList fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }

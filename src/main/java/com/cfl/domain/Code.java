@@ -12,7 +12,7 @@ public class Code {
     private String codeId;
     private String codeName;
     private String codeDescription;
-    private boolean isUsed;
+    private Boolean isUsed;
     private int order;
     private String multiLanguageCode;
     private String parentCodeId;
