@@ -7,26 +7,32 @@
 
     <resultMap id="History" type="History">
         <id property="historyId" column="hist_id" />
+        <result property="serviceName" column="svc_nm"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="actionDateTime" column="actn_ymdt"/>
+        <result property="requestMethod" column="req_metd"/>
+        <result property="requestUrl" column="req_url"/>
         <result property="requestContents" column="req_cont"/>
         <result property="returnMessage" column="rtrn_msg"/>
-        <result property="actionDateTime" column="actn_ymdt"/>
-        <result property="tenantId" column="tnnt_id"/>
-        <result property="serviceName" column="svc_nm"/>
+        <result property="returnContents" column="rtrn_cont"/>
+        <result property="register" column="regr"/>
         <result property="registerServerIp" column="regr_svr_ip"/>
     </resultMap>
 
     <insert id="insertHistory">
         INSERT INTO
-            cfl_history (req_cont, rtrn_msg, actn_ymdt, tnnt_id, svc_nm, regr_svr_ip, req_metd, req_url)
+            cfl_history (svc_nm, tnnt_id, actn_ymdt, req_metd, req_url, req_cont, rtrn_msg, rtrn_cont, reqr, regr_svr_ip)
         VALUE
-            (#{requestContents}
-            , #{returnMessage}
-            , CURRENT_TIMESTAMP()
+            (#{serviceName}
             , #{tenantId}
-            , #{serviceName}
-            , #{registerServerIp}
+            , CURRENT_TIMESTAMP()
             , #{requestMethod}
-            , #{requestUrl})
+            , #{requestUrl}
+            , #{requestContents}
+            , #{returnMessage}
+            , #{returnContents}
+            , #{requestPerson}
+            , #{registerServerIp})
     </insert>
 
 </mapper>

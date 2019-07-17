@@ -45,7 +45,7 @@ public class AuthorityService{
             authorityMapper.insertAuthority(authority);
             cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
-            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
         } catch (Exception e) { // TODO Exception 정해서 코드 정하고 넘겨주기
             log.error("createAuthority fail", e);
@@ -61,7 +61,7 @@ public class AuthorityService{
             authorityMapper.updateAuthority(serviceName, authority.getTenantId(), authorityId, authority);
             cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
-            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
         } catch (Exception e) { // TODO 실패도 히스토리추가(오류이후)
             log.error("modifyAuthority fail", e);
@@ -78,7 +78,7 @@ public class AuthorityService{
 
             cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
-            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("modifyAuthority fail", e);
@@ -100,7 +100,7 @@ public class AuthorityService{
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(authorityFromCache);
             }
-            historyService.createHistory(serviceName, authorityFromCache.getTenantId(), authorityFromCache, apiResponse.getHeader().getResultMessage());
+
             return apiResponse;
         } catch (Exception e) {
             log.error("getAuthority fail", e);
@@ -135,7 +135,7 @@ public class AuthorityService{
                 apiResponse =  ApiResponseUtil.getDuplicateApiResponse(duplicatedUserList);
             }
 
-            historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, apiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, apiResponse);
             return apiResponse;
         } catch (Exception e) {
             log.error("createAuthorityUsersMapping fail", e);
@@ -152,7 +152,7 @@ public class AuthorityService{
             }
             cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestUsers);
-            historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("removeAuthorityUsersMapping fail", e);
@@ -175,7 +175,6 @@ public class AuthorityService{
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(userList);
             }
 
-            historyService.createHistory(serviceName, authority.getTenantId(), userList, apiResponse.getHeader().getResultMessage());
             return apiResponse;
         } catch (Exception e) {
             log.error("getAuthorityUsersMapping fail", e);

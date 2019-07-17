@@ -45,7 +45,7 @@ public class ObjectService {
             cflObjectMapper.insertObject(object);
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
-            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("createObject fail", e);
@@ -62,7 +62,7 @@ public class ObjectService {
             cflObjectMapper.updateObject(object);
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
-            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("modifyObject fail", e);
@@ -80,7 +80,7 @@ public class ObjectService {
 
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
-            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("removeObject fail", e);
@@ -102,7 +102,7 @@ public class ObjectService {
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(objectFromCache);
             }
-            historyService.createHistory(serviceName, objectFromCache.getTenantId(), objectFromCache, apiResponse.getHeader().getResultMessage());
+
             return apiResponse;
         } catch (Exception e) {
             log.error("getObject fail", e);
@@ -137,7 +137,7 @@ public class ObjectService {
                 apiResponse = ApiResponseUtil.getDuplicateApiResponse(duplicatedAuthorityList);
             }
 
-            historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, apiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, apiResponse);
             return apiResponse;
         } catch (Exception e) {
             log.error("createObjectAuthoritiesMapping fail", e);
@@ -155,7 +155,7 @@ public class ObjectService {
             }
             cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
-            historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("removeObjectAuthoritiesMapping fail", e);
@@ -178,7 +178,6 @@ public class ObjectService {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(authorityList);
             }
 
-            historyService.createHistory(serviceName, object.getTenantId(), authorityList, apiResponse.getHeader().getResultMessage());
             return apiResponse;
         } catch (Exception e) {
             log.error("getObjectAuthoritiesMapping fail", e);

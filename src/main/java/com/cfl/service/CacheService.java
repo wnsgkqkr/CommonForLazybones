@@ -21,9 +21,9 @@ public class CacheService {
     private AuthorityService authorityService;
     @Autowired
     private MappingService mappingService;
-    // todo 서비스로 대체
     @Autowired
-    private CodeMapper codeMapper;
+    private CodeService codeService;
+
 
     public ApiResponse allCacheInit(String serverIp){
         try {
@@ -335,8 +335,8 @@ public class CacheService {
     public ApiResponse refreshTenantAuthorityCache(String serviceName, String tenantId) {
         try {
             List<Authority> authorityList = authorityService.getTenantAuthorities(serviceName, tenantId);
-            Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
-            Map<String, Map<String, Map<String, Authority>>> toBeChangedTenantMap = addUsers(temporaryAuthorityCache);
+            Map<String, Map<String, Map<String, Authority>>> authorityMap = getAuthorityMap(authorityList);
+            Map<String, Map<String, Map<String, Authority>>> toBeChangedTenantMap = addUsers(authorityMap);
 
             // 캐시 안에 기존 테넌트 맵 지우고 새로운 테넌트 맵 저장
             Map<String, Map<String, Authority>> cacheServiceMap = Cache.authorityUserCache.get(serviceName);
@@ -357,8 +357,8 @@ public class CacheService {
     public ApiResponse refreshServiceAuthorityCache(String serviceName) {
         try {
             List<Authority> authorityList = authorityService.getServiceAuthorities(serviceName);
-            Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
-            Map<String, Map<String, Map<String, Authority>>> toBeChangedServiceMap = addUsers(temporaryAuthorityCache);
+            Map<String, Map<String, Map<String, Authority>>> authorityMap = getAuthorityMap(authorityList);
+            Map<String, Map<String, Map<String, Authority>>> toBeChangedServiceMap = addUsers(authorityMap);
 
             // 캐시 안에 기존 서비스 맵 지우고 새로운 서비스 맵 저장
             synchronized (Cache.authorityUserCache) {
@@ -426,8 +426,11 @@ public class CacheService {
     @PostConstruct
     public ApiResponse createCodeCache() {
         try {
-            List<Code> codeList = codeMapper.selectAllCodes();
-            Cache.codeCache = getCodes(codeList);
+            List<Code> codeList = codeService.getAllCodes();
+            Map<String, Map<String, Map<String, Code>>> temporaryCodeCache = getCodeMap(codeList);
+            synchronized (Cache.codeCache) {
+                Cache.codeCache = addSubCodes(temporaryCodeCache);
+            }
             // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
@@ -436,7 +439,7 @@ public class CacheService {
         }
     }
 
-    private Map<String, Map<String, Map<String, Code>>> getCodes(List<Code> codeList) {
+    private Map<String, Map<String, Map<String, Code>>> getCodeMap(List<Code> codeList) {
         Map<String, Map<String, Map<String, Code>>> newCodeCacheMap = new HashMap<>();
 
         for (Code code : codeList){
@@ -451,24 +454,124 @@ public class CacheService {
 
             // tenant map이 없는 경우 생성
             String tenantId = code.getTenantId();
-            Map<String, Code> TenantIdMap = serviceNameMap.get(tenantId);
-            if (TenantIdMap==null) {
-                TenantIdMap = new HashMap<>();
-                serviceNameMap.put(tenantId,TenantIdMap);
+            Map<String, Code> tenantIdMap = serviceNameMap.get(tenantId);
+            if (tenantIdMap == null) {
+                tenantIdMap = new HashMap<>();
+                serviceNameMap.put(tenantId, tenantIdMap);
             }
 
             // 맵에 오브젝트 저장 코드
-            TenantIdMap.put(code.getCodeId(), code);
+            tenantIdMap.put(code.getCodeId(), code);
         }
 
         return newCodeCacheMap;
     }
 
+    private Map<String, Map<String, Map<String, Code>>> addSubCodes(Map<String, Map<String, Map<String, Code>>> codeMap) {
+
+        // 서비스 이름 keySet 및 iterator 세팅
+        Set<String> serviceNameKeySet = codeMap.keySet();
+        Iterator<String> serviceNameKeyIterator = serviceNameKeySet.iterator();
+        // 서비스 이름으로 반복문을 돌며 서브 코드 및 다국어 정보를 코드에 넣어준다.
+        while (serviceNameKeyIterator.hasNext()) {
+
+            String serviceName = serviceNameKeyIterator.next();
+            Map<String,Map<String, Code>> tenantIdMap = codeMap.get(serviceName);
+            if (tenantIdMap != null) {
+                // 테넌트 아이디 keySet 및 iterator 세팅
+                Set<String> tenantIdKeySet = tenantIdMap.keySet();
+                Iterator<String> tenantIdKeyIterator = tenantIdKeySet.iterator();
+                // 테넌트 아이디로 반복문을 돌며 서브 코드 및 다국어 정보를 코드에 넣어준다.
+                while (tenantIdKeyIterator.hasNext()) {
+
+                    String tenantId = tenantIdKeyIterator.next();
+                    Map<String, Code> codeIdMap = tenantIdMap.get(tenantId);
+                    if (codeIdMap != null) {
+                        // 코드 아이디 keySet 및 iterator 세팅
+                        Set<String> codeKeySet = codeIdMap.keySet();
+                        Iterator<String> codeKeyIterator = codeKeySet.iterator();
+
+                        // 코드 정보 및 권한 매핑 정보 세팅
+                        List<Code> codeList = codeService.getTenantCodes(serviceName, tenantId);
+                        List<Map<String, String>> codeMultiLanguageMapList = codeService.getCodeMultiLanguageMapList(serviceName, tenantId);
+
+
+                        // 코드 아이디로 반복문을 돌며 서브 코드와 다국어 정보를 코드에 넣어준다.
+                        while (codeKeyIterator.hasNext()) {
+                            String codeId = codeKeyIterator.next();
+                            Code code = codeIdMap.get(codeId);
+                            if (code != null) {
+                                // 서브 코드 세팅
+                                if (codeList != null) {
+                                    List<String> subCodeIdList = getSubCodeIdList(codeId, codeList);
+                                    Map<String, Code> subCodeMap = new HashMap<>();
+
+                                    // 서브 코드의 경우 기존에 맵에 있던 인스턴스를 넣는다.
+                                    for (String subCodeId : subCodeIdList) {
+                                        subCodeMap.put(subCodeId, codeMap.get(serviceName).get(tenantId).get(subCodeId));
+                                    }
+                                    code.setSubCodes(subCodeMap);
+                                }
+
+                                // 다국어 정보 세팅
+                                if (codeMultiLanguageMapList != null){
+                                    Map<String, String> multiLanguageMap = getMultiLanguageMap(codeId, codeMultiLanguageMapList);
+                                    code.setMultiLanguageMap(multiLanguageMap);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return codeMap;
+    }
+
+    private List<String> getSubCodeIdList(String codeId, List<Code> codeList) {
+
+        List<String> subCodeIdList = new ArrayList<>();
+
+        for (Code code : codeList) {
+            if (codeId.equals(code.getParentCodeId())) {
+                subCodeIdList.add(code.getCodeId());
+            }
+        }
+
+        return subCodeIdList;
+    }
+
+    private Map<String, String> getMultiLanguageMap(String codeId, List<Map<String, String>> codeMultiLanguageMapList) {
+        Map<String, String> multiLanguageMap = new HashMap<>();
+
+        for (Map<String, String> map : codeMultiLanguageMapList) {
+
+            if (codeId.equals(map.get("codeId"))) {
+                multiLanguageMap.put(map.get("nation"), map.get("multiLanguageName"));
+            }
+        }
+
+        return multiLanguageMap;
+    }
+
+
     public ApiResponse refreshTenantCodeCache(String serviceName, String tenantId) {
         try {
-            List<Code> codeList = codeMapper.selectTenantCodes(serviceName, tenantId);
-            // TODO 기존 캐시를 지워버리기 떄문에 수정 필요
-            Cache.codeCache = getCodes(codeList);
+            List<Code> codeList = codeService.getTenantCodes(serviceName, tenantId);
+            Map<String, Map<String, Map<String, Code>>> codeMap = getCodeMap(codeList);
+            Map<String, Map<String, Map<String, Code>>> toBeChangedTenantMap = addSubCodes(codeMap);
+
+
+            // 캐시 안에 기존 테넌트 맵 지우고 새로운 테넌트 맵 저장
+            Map<String, Map<String, Map<String, Code>>> temporaryCache = Cache.codeCache;
+            Map<String, Map<String, Code>> cacheServiceMap = temporaryCache.get(serviceName);
+
+            synchronized (Cache.codeCache) {
+                cacheServiceMap.remove(tenantId);
+                cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
+            }
+
             // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
@@ -478,9 +581,16 @@ public class CacheService {
     }
     public ApiResponse refreshServiceCodeCache(String serviceName) {
         try {
-            List<Code> codeList = codeMapper.selectServiceCodes(serviceName);
-            // TODO 기존 캐시를 지워버리기 떄문에 수정 필요
-            Cache.codeCache = getCodes(codeList);
+            List<Code> codeList = codeService.getServiceCodes(serviceName);
+            Map<String, Map<String, Map<String, Code>>> codeMap = getCodeMap(codeList);
+            Map<String, Map<String, Map<String, Code>>> toBeChangedServiceMap = addSubCodes(codeMap);
+
+            // 캐시 안에 기존 서비스 맵 지우고 새로운 서비스 맵 저장
+            synchronized (Cache.codeCache) {
+                Cache.codeCache.remove(serviceName);
+                Cache.codeCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
+            }
+
             // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
