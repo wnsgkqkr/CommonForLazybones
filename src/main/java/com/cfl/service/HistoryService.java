@@ -1,8 +1,9 @@
 package com.cfl.service;
 
-import com.cfl.domain.ApiRequest;
+import com.cfl.domain.ApiResponse;
 import com.cfl.domain.History;
 import com.cfl.mapper.HistoryMapper;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -15,33 +16,24 @@ public class HistoryService {
     @Autowired
     private HistoryMapper historyMapper;
 
-    public History createHistory(String serviceName, String tenantId, Object requestObject, String returnMessage){
+    private static Gson gson = new Gson();
+
+    public History createHistory(String serviceName, String tenantId, Object requestObject, ApiResponse response) {
+
         HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 
-        History history = setHistory(serviceName, tenantId, requestObject, returnMessage, httpRequest);
-        if(!isGetMethod(httpRequest)) {
-            historyMapper.insertHistory(history);
-        }
+        String requestMethod = httpRequest.getMethod();
+        String requestUrl = httpRequest.getRequestURI();
+        String requestContents = gson.toJson(requestObject);
+        String returnMessage = response.getHeader().getResultMessage();
+        String returnContents = gson.toJson(response);
+        String requestPerson = null;
+        String registerServerIp = httpRequest.getRemoteAddr();
+
+        History history = new History(serviceName, tenantId, requestMethod, requestUrl, requestContents, returnMessage, returnContents, requestPerson, registerServerIp);
+
+        historyMapper.insertHistory(history);
+
         return history;
-    }
-
-    private History setHistory(String serviceName, String tenantId, Object requestObject, String returnMessage, HttpServletRequest httpRequest){
-        History history = new History();
-
-        history.setRegisterServerIp(httpRequest.getRemoteAddr());
-        history.setRequestContents(requestObject.toString());
-        history.setRequestMethod(httpRequest.getMethod());
-        history.setRequestUrl(httpRequest.getRequestURI());
-        history.setReturnMessage(returnMessage);
-        history.setServiceName(serviceName);
-        history.setTenantId(tenantId);
-        return history;
-    }
-
-    private Boolean isGetMethod(HttpServletRequest httpRequest){
-        if("GET".equals(httpRequest.getMethod())){
-            return true;
-        }
-        return false;
     }
 }

@@ -46,7 +46,7 @@ public class NetworkService {
             server = setAllowedServer(serviceName, tenantId, serverIp, server);
             serverMapper.insertAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -58,7 +58,7 @@ public class NetworkService {
             server = setAllowedServer(serviceName, tenantId, server.getServerIp(), server);
             serverMapper.updateAllowedServer(serviceName, server.getTenantId(), serverIp, server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -70,7 +70,7 @@ public class NetworkService {
             Server server = setAllowedServer(serviceName, tenantId, serverIp, new Server());
             serverMapper.deleteAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -82,7 +82,6 @@ public class NetworkService {
             Server server = setAllowedServer(serviceName, tenantId, serverIp, new Server());
             serverMapper.selectAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse.getHeader().getResultMessage());
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -91,7 +90,7 @@ public class NetworkService {
 
     private Server setAllowedServer(String serviceName, String tenantId, String serverIp, Server server) {
         server.setServiceName(serviceName);
-        if(tenantId == null) {
+        if (tenantId == null) {
             server.setTenantId(Constant.DEFAULT_TENANT_ID);
         } else {
             server.setTenantId(tenantId);

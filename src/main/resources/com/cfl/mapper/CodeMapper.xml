@@ -7,79 +7,51 @@
 
     <resultMap id="Code" type="Code">
         <id property="codeId" column="cd_id" />
-        <result property="parentCodeId" column="prnt_cd_id"/>
-        <result property="multiLanguageCode" column="mlng_cd"/>
         <result property="codeName" column="cd_nm"/>
         <result property="codeDescription" column="cd_desc"/>
         <result property="isUsed" column="use_yn"/>
-        <result property="sortOrder" column="sort_ord"/>
+        <result property="order" column="ord"/>
+        <result property="multiLanguageCode" column="mlng_cd"/>
+        <result property="parentCodeId" column="prnt_cd_id"/>
         <result property="tenantId" column="tnnt_id"/>
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <select id="selectTenantCodes" resultMap="Code">
-        SELECT
-            *
-        FROM
-            cfl_code
-        WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-    </select>
-
-    <select id="selectServiceCodes" resultMap="Code">
-        SELECT
-            *
-        FROM
-            cfl_code
-        WHERE
-            svc_nm = #{serviceName}
-    </select>
-
-    <select id="selectAllCodes" resultMap="Code">
-        SELECT
-            *
-        FROM
-            cfl_code
-    </select>
-
-    <select id="selectCode" resultMap="Code">
-        SELECT
-            *
-        FROM
-            cfl_code
-        WHERE
-            cd_id = #{codeId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-    </select>
-
     <insert id="insertCode">
         INSERT INTO
-            cfl_code (cd_id, mlng_cd, prnt_cd_id, tnnt_id, cd_desc, use_yn, sort_ord, cd_nm, svc_nm)
+            cfl_code (cd_id, cd_nm, cd_desc, use_yn, ord, mlng_cd, prnt_cd_id, tnnt_id, svc_nm)
         VALUE
             (#{codeId}
+            , #{codeName}
+            , #{codeDescription}
+            , #{isUsed}
+            , #{order}
             , #{multiLanguageCode}
             , #{parentCodeId}
             , #{tenantId}
-            , #{codeDescription}
-            , #{isUsed}
-            , #{sortOrder}
-            , #{codeName}
             , #{serviceName})
+    </insert>
+
+    <insert id="insertCodeMultiLanguage">
+        INSERT INTO
+        cfl_code_multilanguage(mlng_cd, mlng_nat, mlng_nm)
+        VALUES
+        <foreach index="key"  item="value" collection="multiLanguageMap" separator=",">
+            (#{multiLanguageCode}, #{key}, #{value})
+        </foreach>
     </insert>
 
     <update id="updateCode">
         UPDATE
             cfl_code
         SET
-            mlng_cd = #{multiLanguageCode}
-            , prnt_cd_id = #{parentCodeId}
-            , tnnt_id = #{tenantId}
+            cd_nm = #{codeName}
             , cd_desc = #{codeDescription}
             , use_yn = #{isUsed}
-            , sort_ord = #{sortOrder}
-            , cd_nm = #{codeName}
+            , ord = #{order}
+            , mlng_cd = #{multiLanguageCode}
+            , prnt_cd_id = #{parentCodeId}
+            , tnnt_id = #{tenantId}
             , svc_nm = #{serviceName}
         WHERE
             cd_id = #{codeId}
@@ -96,5 +68,64 @@
             AND tnnt_id = #{tenantId}
     </delete>
 
-</mapper>
+    <delete id="deleteCodeMultiLanguage">
+        DELETE FROM
+            cfl_code_multilanguage
+        WHERE
+            mlng_cd = #{multiLanguageCode}
+    </delete>
 
+    <select id="selectCode" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code
+        WHERE
+            cd_id = #{codeId}
+            AND svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
+
+    <select id="selectAllCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code
+    </select>
+
+    <select id="selectServiceCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code
+        WHERE
+            svc_nm = #{serviceName}
+    </select>
+
+    <select id="selectTenantCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code
+        WHERE
+            svc_nm = #{serviceName}
+            AND tnnt_id = #{tenantId}
+    </select>
+
+    <select id="selectCodeMultiLanguageMapList" resultType="Map">
+        SELECT
+            cd.cd_id AS codeId
+            , cdml.mlng_nat AS nation
+            , cdml.mlng_nm AS multiLanguageName
+        FROM
+            cfl_code cd
+            INNER JOIN
+                cfl_code_multilanguage cdml
+            ON
+                cd.mlng_cd = cdml.mlng_cd
+        WHERE
+	        cd.svc_nm = #{serviceName}
+	        AND cd.tnnt_id = #{tenantId}
+    </select>
+
+</mapper>

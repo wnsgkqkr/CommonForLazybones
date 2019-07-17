@@ -9,12 +9,29 @@ import java.util.Date;
 @Setter
 public class History {
     String historyId;
-    String requestContents;
-    String returnMessage;
-    Date actionDateTime;
     String serviceName;
     String tenantId;
-    String registerServerIp;
+    Date actionDateTime;
     String requestMethod;
     String requestUrl;
+    String requestContents;
+    String returnMessage;
+    String returnContents;
+    String requestPerson;
+    String registerServerIp;
+
+    public History() {}
+
+    public History(String serviceName, String tenantId, String requestMethod, String requestUrl, String requestContents
+                   , String returnMessage, String returnContents, String requestPerson, String registerServerIp) {
+        this.serviceName = serviceName;
+        this.tenantId = tenantId;
+        this.requestMethod = requestMethod;
+        this.requestUrl = requestUrl;
+        this.requestContents = requestContents;
+        this.returnMessage = returnMessage;
+        this.returnContents = returnContents;
+        this.requestPerson = requestPerson;
+        this.registerServerIp = registerServerIp;
+    }
 }

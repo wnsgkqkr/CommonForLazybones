@@ -36,7 +36,7 @@ public class UserService {
             userMapper.insertUser(user);
             cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("createUser fail", e);
@@ -53,7 +53,7 @@ public class UserService {
             userMapper.updateUser(user);
             cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("modifyUser fail", e);
@@ -68,7 +68,7 @@ public class UserService {
             userMapper.deleteUser(user);
             cacheService.clearUserTenantCache(serviceName, user.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse.getHeader().getResultMessage());
+            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             log.error("removeUser fail", e);
