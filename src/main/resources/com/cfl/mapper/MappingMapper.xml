@@ -121,7 +121,6 @@
                 svc_nm = #{authority.serviceName}
                 AND tnnt_id = #{authority.tenantId}
                 AND objt_id =#{objectId})
-            )
             ,
             (SELECT
                 auth_seq
@@ -131,6 +130,7 @@
                 svc_nm = #{authority.serviceName}
                 AND tnnt_id = #{authority.tenantId}
                 AND auth_id = #{authority.authorityId})
+            )
     </insert>
 
     <delete id="deleteObjectAuthority">

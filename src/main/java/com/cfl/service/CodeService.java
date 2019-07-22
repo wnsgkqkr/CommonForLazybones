@@ -24,6 +24,8 @@ public class CodeService{
     @Autowired
     private HistoryService historyService;
 
+    private static final String DEFAULT_PARENT_CODE_ID = "NOT_TO_EXIST";
+
     public List<Code> getAllCodes() {
         return codeMapper.selectAllCodes();
     }
@@ -46,6 +48,11 @@ public class CodeService{
             code.setTenantId(tenantId);
             code.setCodeId(codeId);
             code.setMultiLanguageCode(UUID.randomUUID().toString());
+
+            // 부모 코드 아이디가 기본키에 포함되기 때문에 null인 경우 디폴트 부모 코드 아이디를 추가한다.
+            if (code.getParentCodeId() == null) {
+                code.setParentCodeId(DEFAULT_PARENT_CODE_ID);
+            }
 
             codeMapper.insertCode(code);
             codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
