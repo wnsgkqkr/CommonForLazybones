@@ -14,33 +14,33 @@
         INSERT INTO
             cfl_user (user_id, user_type, tnnt_id, user_seq, svc_nm)
         VALUE
-            (#{userId}
-            , #{userType}
-            , #{tenantId}
-            , #{userSequence}
-            , #{serviceName})
+            (#{user.userId}
+            , #{user.userType}
+            , #{user.tenantId}
+            , #{user.userSequence}
+            , #{user.serviceName})
     </insert>
 
     <update id="updateUser">
         UPDATE
             cfl_user
         SET
-            user_id = #{userId}
-            , user_type = #{userType}
-            , tnnt_id = #{tenantId}
-            , user_seq = #{userSequence}
-            , svc_nm = #{serviceName}
+            user_id = #{user.userId}
+            , user_type = #{user.userType}
+            , tnnt_id = #{user.tenantId}
+            , user_seq = #{user.userSequence}
+            , svc_nm = #{user.serviceName}
         WHERE
-            user_seq = #{userSequence}
+            user_seq = #{user.userSequence}
     </update>
 
     <delete id="deleteUser">
         DELETE FROM
             cfl_user
         WHERE
-            user_id = #{userId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
+            user_id = #{user.userId}
+            AND svc_nm = #{user.serviceName}
+            AND tnnt_id = #{user.tenantId}
     </delete>
 
     <select id="selectUser" resultMap="User">
@@ -49,9 +49,8 @@
         FROM
             cfl_user
         WHERE
-            user_id = #{userId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
+            user_id = #{user.userId}
+            AND svc_nm = #{user.serviceName}
+            AND tnnt_id = #{user.tenantId}
     </select>
 </mapper>
-

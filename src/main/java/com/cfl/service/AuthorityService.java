@@ -58,7 +58,7 @@ public class AuthorityService{
             authority.setTenantId(tenantId);
             authority.setAuthorityId(authorityId);
 
-            authorityMapper.updateAuthority(serviceName, authority.getTenantId(), authorityId, authority);
+            authorityMapper.updateAuthority(authority);
             cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);

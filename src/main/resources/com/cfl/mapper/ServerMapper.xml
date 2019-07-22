@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-        namespace="com.cfl.mapper.ServerMapper">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cfl.mapper.ServerMapper">
 
     <resultMap id="Server" type="Server">
         <id property="serverIp" column="svr_ip" />
@@ -12,49 +9,15 @@
         <result property="tenantId" column="tnnt_id"/>
     </resultMap>
 
-    <select id="selectAllowedServer" resultMap="Server">
-        SELECT
-            *
-        FROM
-            cfl_allowed_server
-        WHERE 
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND svr_ip = #{serverIp}
-    </select>
-
-    <select id="selectProvideServer" resultMap="Server">
-        SELECT
-            *
-        FROM
-            cfl_provide_server
-        WHERE
-            svr_ip = #{serverIp}
-    </select>
-
-    <select id="selectAllProvideServerIp" resultType="String">
-        SELECT
-            svr_ip
-        FROM
-            cfl_provide_server
-    </select>
 
     <insert id="insertAllowedServer">
         INSERT INTO
             cfl_allowed_server (svr_ip, tnnt_id, svr_nm, svc_nm)
         VALUE
-            (#{serverIp}
-            , #{tenantId}
-            , #{serverName}
-            , #{serviceName})
-    </insert>
-
-    <insert id="insertProvideServer">
-        INSERT INTO
-            cfl_provide_server (svr_ip, svr_nm)
-        VALUE
-            (#{serverIp}
-            , #{serverName})
+            (#{server.serverIp}
+            , #{server.tenantId}
+            , #{server.serverName}
+            , #{server.serviceName})
     </insert>
 
     <update id="updateAllowedServer">
@@ -66,19 +29,54 @@
             , svr_nm = #{server.serverName}
             , svc_nm = #{server.serviceName}
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND svr_ip = #{serverIp}
+            svc_nm = #{server.serviceName}
+            AND tnnt_id = #{server.tenantId}
+            AND svr_ip = #{server.serverIp}
     </update>
 
     <delete id="deleteAllowedServer">
         DELETE FROM
             cfl_allowed_server
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND svr_ip = #{serverIp}
+            svc_nm = #{server.serviceName}
+            AND tnnt_id = #{server.tenantId}
+            AND svr_ip = #{server.serverIp}
     </delete>
+
+    <select id="selectAllowedServer" resultMap="Server">
+        SELECT
+            *
+        FROM
+            cfl_allowed_server
+        WHERE
+            svc_nm = #{server.serviceName}
+            AND tnnt_id = #{server.tenantId}
+            AND svr_ip = #{server.serverIp}
+    </select>
+
+    <insert id="insertProvideServer">
+        INSERT INTO
+            cfl_provide_server (svr_ip, svr_nm)
+        VALUE
+            (#{server.serverIp}
+            , #{server.serverName})
+    </insert>
+
+    <select id="selectProvideServer" resultMap="Server">
+        SELECT
+            *
+        FROM
+            cfl_provide_server
+        WHERE
+            svr_ip = #{server.serverIp}
+    </select>
+
+    <select id="selectAllProvideServerIp" resultType="String">
+        SELECT
+            svr_ip
+        FROM
+            cfl_provide_server
+    </select>
 
     <select id="selectRegExpServerList" resultMap="Server">
         SELECT

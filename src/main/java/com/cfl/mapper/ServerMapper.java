@@ -8,14 +8,14 @@ import java.util.List;
 
 @Mapper
 public interface ServerMapper {
-    void insertAllowedServer(Server server);
-    void updateAllowedServer(String serviceName, String tenantId, String serverIp, @Param("server") Server server);
-    void deleteAllowedServer(Server server);
-    Server selectAllowedServer(Server server);
+    void insertAllowedServer(@Param("server") Server server);
+    void updateAllowedServer(@Param("server") Server server);
+    void deleteAllowedServer(@Param("server") Server server);
+    Server selectAllowedServer( @Param("server")Server server);
 
-    void insertProvideServer(Server server);
-    Server selectProvideServer(Server server);
+    void insertProvideServer(@Param("server") Server server);
+    Server selectProvideServer(@Param("server") Server server);
     List<String> selectAllProvideServerIp();
 
-    List<Server> selectRegExpServerList(String serviceName, String tenantId);
+    List<Server> selectRegExpServerList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 }

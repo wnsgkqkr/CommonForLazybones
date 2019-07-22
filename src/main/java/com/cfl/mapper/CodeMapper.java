@@ -2,25 +2,26 @@ package com.cfl.mapper;
 
 import com.cfl.domain.Code;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 public interface CodeMapper {
-    void insertCode(Code code);
-    void insertCodeMultiLanguage(String multiLanguageCode, Map<String, String> multiLanguageMap);
+    void insertCode(@Param("code") Code code);
+    void insertCodeMultiLanguage(@Param("multiLanguageCode")  String multiLanguageCode, @Param("multiLanguageMap")  Map<String, String> multiLanguageMap);
 
-    void updateCode(Code code);
+    void updateCode(@Param("code") Code code);
 
-    void deleteCode(Code code);
-    void deleteCodeMultiLanguage(String multiLanguageCode);
+    void deleteCode(@Param("code") Code code);
+    void deleteCodeMultiLanguage(@Param("multiLanguageCode")  String multiLanguageCode);
 
-    Code selectCode(Code code);
+    Code selectCode(@Param("code") Code code);
 
     List<Code> selectAllCodes();
-    List<Code> selectServiceCodes(String serviceName);
-    List<Code> selectTenantCodes(String serviceName, String tenantId);
+    List<Code> selectServiceCodes(@Param("serviceName") String serviceName);
+    List<Code> selectTenantCodes(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 
-    List<Map<String, String>> selectCodeMultiLanguageMapList(String serviceName, String tenantId);
+    List<Map<String, String>> selectCodeMultiLanguageMapList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 }

@@ -21,15 +21,15 @@
         INSERT INTO
             cfl_code (cd_id, cd_nm, cd_desc, use_yn, ord, mlng_cd, prnt_cd_id, tnnt_id, svc_nm)
         VALUE
-            (#{codeId}
-            , #{codeName}
-            , #{codeDescription}
-            , #{isUsed}
-            , #{order}
-            , #{multiLanguageCode}
-            , #{parentCodeId}
-            , #{tenantId}
-            , #{serviceName})
+            (#{code.codeId}
+            , #{code.codeName}
+            , #{code.codeDescription}
+            , #{code.isUsed}
+            , #{code.order}
+            , #{code.multiLanguageCode}
+            , #{code.parentCodeId}
+            , #{code.tenantId}
+            , #{code.serviceName})
     </insert>
 
     <insert id="insertCodeMultiLanguage">
@@ -45,27 +45,27 @@
         UPDATE
             cfl_code
         SET
-            cd_nm = #{codeName}
-            , cd_desc = #{codeDescription}
-            , use_yn = #{isUsed}
-            , ord = #{order}
-            , mlng_cd = #{multiLanguageCode}
-            , prnt_cd_id = #{parentCodeId}
-            , tnnt_id = #{tenantId}
-            , svc_nm = #{serviceName}
+            cd_nm = #{code.codeName}
+            , cd_desc = #{code.codeDescription}
+            , use_yn = #{code.isUsed}
+            , ord = #{code.order}
+            , mlng_cd = #{code.multiLanguageCode}
+            , prnt_cd_id = #{code.parentCodeId}
+            , tnnt_id = #{code.tenantId}
+            , svc_nm = #{code.serviceName}
         WHERE
-            cd_id = #{codeId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
+            cd_id = #{code.codeId}
+            AND svc_nm = #{code.serviceName}
+            AND tnnt_id = #{code.tenantId}
     </update>
 
     <delete id="deleteCode">
         DELETE FROM
             cfl_code
         WHERE
-            cd_id = #{codeId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
+            cd_id = #{code.codeId}
+            AND svc_nm = #{code.serviceName}
+            AND tnnt_id = #{code.tenantId}
     </delete>
 
     <delete id="deleteCodeMultiLanguage">
@@ -81,9 +81,9 @@
         FROM
             cfl_code
         WHERE
-            cd_id = #{codeId}
-            AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
+            cd_id = #{code.codeId}
+            AND svc_nm = #{code.serviceName}
+            AND tnnt_id = #{code.tenantId}
     </select>
 
     <select id="selectAllCodes" resultMap="Code">

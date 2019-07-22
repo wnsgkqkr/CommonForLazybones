@@ -46,20 +46,20 @@
         FROM
             cfl_authority
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND auth_id = #{authorityId}
+            svc_nm = #{authority.serviceName}
+            AND tnnt_id = #{authority.tenantId}
+            AND auth_id = #{authority.authorityId}
     </select>
 
     <insert id="insertAuthority">
         INSERT INTO
             cfl_authority (auth_id, auth_nm, auth_type, tnnt_id, svc_nm)
         VALUE
-            (#{authorityId}
-            , #{authorityName}
-            , #{authorityType}
-            , #{tenantId}
-            , #{serviceName})
+            (#{authority.authorityId}
+            , #{authority.authorityName}
+            , #{authority.authorityType}
+            , #{authority.tenantId}
+            , #{authority.serviceName})
     </insert>
 
     <update id="updateAuthority">
@@ -72,17 +72,17 @@
             , svc_nm = #{authority.serviceName}
             , auth_type = #{authority.authorityType}
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND auth_id = #{authorityId}
+            svc_nm = #{authority.serviceName}
+            AND tnnt_id = #{authority.tenantId}
+            AND auth_id = #{authority.authorityId}
     </update>
 
     <delete id="deleteAuthority">
         DELETE FROM
             cfl_authority
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND auth_id = #{authorityId}
+            svc_nm = #{authority.serviceName}
+            AND tnnt_id = #{authority.tenantId}
+            AND auth_id = #{authority.authorityId}
     </delete>
 </mapper>

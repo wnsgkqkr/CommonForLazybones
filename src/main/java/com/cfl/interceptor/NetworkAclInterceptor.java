@@ -6,6 +6,7 @@ import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,28 +20,23 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
     private NetworkService networkService;
 
     private static final String[] URL_VALUES = new String[] {"authority", "user", "object", "network-acl", "code"};
-    private static final Set<String> URL_SET = new HashSet<String>(Arrays.asList(URL_VALUES));
+    private static final Set<String> URL_SET = new HashSet<>(Arrays.asList(URL_VALUES));
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Map<String, String> serviceAndTenantId = getServiceAndTenantIdFromUrl(request.getRequestURI());
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
-        if(networkService.isAllowedServer(serviceAndTenantId.get("serviceName"), serviceAndTenantId.get("tenantId"), request.getRemoteAddr())) {
-            return true;
+        try {
+            Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+
+            if (networkService.isAllowedServer(pathVariables.get("serviceName"), pathVariables.get("tenantId"), request.getRemoteAddr())) {
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("unauthorized server" ,e);
+            throw new UnauthorizedException("unauthorized server");
         }
+
+        log.error("unauthorized server");
         throw new UnauthorizedException("unauthorized server");
-    }
-
-    private Map<String, String> getServiceAndTenantIdFromUrl(String url){
-        String splitUrlArray[] = url.split("/");
-        Map<String, String> serviceAndTenantId = new HashMap<>();
-
-        serviceAndTenantId.put("serviceName", splitUrlArray[1]);
-        if(splitUrlArray.length > 1 && !URL_SET.contains(splitUrlArray[2])) {
-            serviceAndTenantId.put("tenantId", splitUrlArray[2]);
-        } else {
-            serviceAndTenantId.put("tenantId", Constant.DEFAULT_TENANT_ID);
-        }
-        return serviceAndTenantId;
     }
 }

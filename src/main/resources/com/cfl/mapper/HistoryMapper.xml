@@ -23,16 +23,16 @@
         INSERT INTO
             cfl_history (svc_nm, tnnt_id, actn_ymdt, req_metd, req_url, req_cont, rtrn_msg, rtrn_cont, reqr, regr_svr_ip)
         VALUE
-            (#{serviceName}
-            , #{tenantId}
+            (#{history.serviceName}
+            , #{history.tenantId}
             , CURRENT_TIMESTAMP()
-            , #{requestMethod}
-            , #{requestUrl}
-            , #{requestContents}
-            , #{returnMessage}
-            , #{returnContents}
-            , #{requestPerson}
-            , #{registerServerIp})
+            , #{history.requestMethod}
+            , #{history.requestUrl}
+            , #{history.requestContents}
+            , #{history.returnMessage}
+            , #{history.returnContents}
+            , #{history.requestPerson}
+            , #{history.registerServerIp})
     </insert>
 
 </mapper>

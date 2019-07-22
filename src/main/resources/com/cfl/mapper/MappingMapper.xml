@@ -263,9 +263,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            ob.svc_nm = #{serviceName}
-	        AND ob.tnnt_id = #{tenantId}
-	        AND ob.objt_id = #{objectId}
+            ob.svc_nm = #{object.serviceName}
+	        AND ob.tnnt_id = #{object.tenantId}
+	        AND ob.objt_id = #{object.objectId}
     </select>
 
     <select id="selectAuthorityUsers" resultMap="User">
@@ -282,9 +282,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            auth.svc_nm = #{serviceName}
-	        AND auth.tnnt_id = #{tenantId}
-	        AND auth.auth_id = #{authorityId}
+            auth.svc_nm = #{authority.serviceName}
+	        AND auth.tnnt_id = #{authority.tenantId}
+	        AND auth.auth_id = #{authority.authorityId}
     </select>
 
     <select id="selectUserAuthorities" resultMap="Authority">
@@ -301,9 +301,9 @@
             ON
                 authm.auth_seq = auth.auth_seq
         WHERE
-            user.svc_nm = #{serviceName}
-	        AND user.tnnt_id = #{tenantId}
-	        AND user.user_id = #{userId}
+            user.svc_nm = #{user.serviceName}
+	        AND user.tnnt_id = #{user.tenantId}
+	        AND user.user_id = #{user.userId}
 	    ORDER BY
 	        auth.auth_nm
     </select>

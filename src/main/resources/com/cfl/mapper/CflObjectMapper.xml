@@ -15,11 +15,11 @@
         INSERT INTO
             cfl_object (objt_id, objt_nm, objt_type, tnnt_id, svc_nm)
         VALUE
-            (#{objectId}
-            , #{objectName}
-            , #{objectType}
-            , #{tenantId}
-            , #{serviceName})
+            (#{object.objectId}
+            , #{object.objectName}
+            , #{object.objectType}
+            , #{object.tenantId}
+            , #{object.serviceName})
     </insert>
 
     <update id="updateObject">
@@ -32,18 +32,18 @@
             , objt_nm = #{object.objectName}
             , svc_nm = #{object.serviceName}
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND objt_id = #{objectId}
+            svc_nm = #{object.serviceName}
+            AND tnnt_id = #{object.tenantId}
+            AND objt_id = #{object.objectId}
     </update>
 
     <delete id="deleteObject">
         DELETE FROM
             cfl_object
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND objt_id = #{objectId}
+            svc_nm = #{object.serviceName}
+            AND tnnt_id = #{object.tenantId}
+            AND objt_id = #{object.objectId}
     </delete>
 
     <select id="selectObject" resultMap="CflObject">
@@ -52,9 +52,9 @@
         FROM
             cfl_object
         WHERE
-            svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
-            AND objt_id = #{objectId}
+            svc_nm = #{object.serviceName}
+            AND tnnt_id = #{object.tenantId}
+            AND objt_id = #{object.objectId}
     </select>
 
     <select id="selectAllObjects" resultMap="CflObject">
