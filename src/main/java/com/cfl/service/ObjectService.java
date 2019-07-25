@@ -18,11 +18,11 @@ public class ObjectService {
     @Autowired
     private AuthorityService authorityService;
     @Autowired
-    private CacheService cacheService;
-    @Autowired
     private HistoryService historyService;
     @Autowired
     private MappingService mappingService;
+    @Autowired
+    private NetworkService networkService;
 
     public List<CflObject> getAllObjects() {
         return cflObjectMapper.selectAllObjects();
@@ -43,7 +43,7 @@ public class ObjectService {
             object.setObjectId(objectId);
 
             cflObjectMapper.insertObject(object);
-            cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
             historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
@@ -60,7 +60,7 @@ public class ObjectService {
             object.setObjectId(objectId);
 
             cflObjectMapper.updateObject(object);
-            cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
             historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
@@ -78,7 +78,7 @@ public class ObjectService {
             mappingService.removeObjectMapping(object);
             cflObjectMapper.deleteObject(object);
 
-            cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(object);
             historyService.createHistory(serviceName, object.getTenantId(), object, successApiResponse);
             return successApiResponse;
@@ -127,12 +127,12 @@ public class ObjectService {
                 }
             }
 
-            cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
 
             ApiResponse apiResponse;
 
             if (duplicatedAuthorityList.size() == 0) {
-                apiResponse =  ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
             } else {
                 apiResponse = ApiResponseUtil.getDuplicateApiResponse(duplicatedAuthorityList);
             }
@@ -153,7 +153,7 @@ public class ObjectService {
                 requestAuthority.setTenantId(object.getTenantId());
                 mappingService.removeObjectAuthorityMapping(objectId, requestAuthority);
             }
-            cacheService.refreshTenantObjectCache(serviceName, object.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
             historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, successApiResponse);
             return successApiResponse;

@@ -50,11 +50,11 @@
             , use_yn = #{code.isUsed}
             , ord = #{code.order}
             , mlng_cd = #{code.multiLanguageCode}
-            , prnt_cd_id = #{code.parentCodeId}
             , tnnt_id = #{code.tenantId}
             , svc_nm = #{code.serviceName}
         WHERE
             cd_id = #{code.codeId}
+            AND prnt_cd_id = #{code.parentCodeId}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </update>
@@ -64,6 +64,7 @@
             cfl_code
         WHERE
             cd_id = #{code.codeId}
+            AND prnt_cd_id = #{code.parentCodeId}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </delete>
@@ -82,6 +83,7 @@
             cfl_code
         WHERE
             cd_id = #{code.codeId}
+            AND prnt_cd_id = #{code.parentCodeId}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </select>

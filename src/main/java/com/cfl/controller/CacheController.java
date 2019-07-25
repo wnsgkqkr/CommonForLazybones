@@ -1,6 +1,7 @@
 package com.cfl.controller;
 
 import com.cfl.domain.ApiResponse;
+import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.service.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,8 +70,9 @@ public class CacheController {
         return cacheService.createCodeCache();
     }
 
-    @RequestMapping(value = "/init")
-    public ApiResponse cacheInit(@RequestBody String serverIp){
-        return cacheService.allCacheInit(serverIp);
+    @RequestMapping(value = "/{serviceName}/cache/init") //TODO 슬램의 씨플 url 수정해서 쓸모없는 패스배리어블 삭제할수 있게
+    public ApiResponse cacheInit(@PathVariable("serviceName")String serviceName,
+                                 @RequestBody CacheUpdateRequest cacheUpdateRequest) {
+        return cacheService.cacheInit(cacheUpdateRequest);
     }
 }

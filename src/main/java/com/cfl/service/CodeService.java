@@ -2,6 +2,7 @@ package com.cfl.service;
 
 import com.cfl.cache.Cache;
 import com.cfl.domain.ApiResponse;
+import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.Code;
 import com.cfl.mapper.CodeMapper;
 import com.cfl.util.ApiResponseUtil;
@@ -20,7 +21,7 @@ public class CodeService{
     @Autowired
     private CodeMapper codeMapper;
     @Autowired
-    private CacheService cacheService;
+    private NetworkService networkService;
     @Autowired
     private HistoryService historyService;
 
@@ -60,7 +61,7 @@ public class CodeService{
             codeMapper.insertCode(code);
             codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
 
-            cacheService.refreshTenantCodeCache(serviceName, code.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
             historyService.createHistory(serviceName, code.getTenantId(), code, successApiResponse);
             return successApiResponse;
@@ -85,7 +86,7 @@ public class CodeService{
             codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
             codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
 
-            cacheService.refreshTenantCodeCache(serviceName, code.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
             historyService.createHistory(serviceName, code.getTenantId(), code, successApiResponse);
             return successApiResponse;
@@ -103,7 +104,7 @@ public class CodeService{
             codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
             codeMapper.deleteCode(code);
 
-            cacheService.refreshTenantCodeCache(serviceName, code.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
             historyService.createHistory(serviceName, code.getTenantId(), code, successApiResponse);
             return successApiResponse;

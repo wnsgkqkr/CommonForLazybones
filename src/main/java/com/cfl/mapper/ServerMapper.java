@@ -14,8 +14,8 @@ public interface ServerMapper {
     Server selectAllowedServer( @Param("server")Server server);
 
     void insertProvideServer(@Param("server") Server server);
-    Server selectProvideServer(@Param("server") Server server);
-    List<String> selectAllProvideServerIp();
+    Server selectProvideServerByServerIp(@Param("server") Server server);
+    List<Server> selectProvideServerByServiceName(String serviceName);
 
     List<Server> selectRegExpServerList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 }

@@ -11,6 +11,7 @@ public class Server {
     private String serverName;
     private String tenantId;
     private String serviceName;
+    private String portNumber;
 
     public Server() { }
 

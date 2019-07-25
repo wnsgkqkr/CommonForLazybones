@@ -1,5 +1,6 @@
 package com.cfl.controller;
 
+import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.Server;
 import com.cfl.domain.ApiResponse;
 import com.cfl.service.NetworkService;
@@ -39,5 +40,11 @@ public class NetworkAclController {
                                         @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @PathVariable("ip") String serverIp) {
         return networkService.getNetworkAcl(serviceName, tenantId, serverIp);
+    }
+
+    @RequestMapping(value = "/{serviceName}/server/cache/init")
+    public void sendCacheInit(@PathVariable("serviceName")String serviceName,
+                              @RequestBody CacheUpdateRequest cacheUpdateRequest) {
+        networkService.sendProvideServersToInit(serviceName, cacheUpdateRequest);
     }
 }

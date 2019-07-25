@@ -24,14 +24,28 @@ public class CacheService {
     @Autowired
     private CodeService codeService;
 
-
-    public ApiResponse allCacheInit(String serverIp){
+    public ApiResponse cacheInit(CacheUpdateRequest cacheUpdateRequest) {
         try {
-            createObjectCache();
-            createAuthorityCache();
-            createCodeCache();
-            clearUserCache();
-            return ApiResponseUtil.getSuccessApiResponse(serverIp);
+            String tenantId = cacheUpdateRequest.getTenantId();
+            String serviceName = cacheUpdateRequest.getServiceName();
+            if (tenantId == null) {
+                tenantId = Constant.DEFAULT_TENANT_ID;
+            }
+            if (cacheUpdateRequest.getCacheType().equals("object")) {
+                refreshTenantObjectCache(serviceName, tenantId);
+            } else if (cacheUpdateRequest.getCacheType().equals("authority")) {
+                refreshTenantAuthorityCache(serviceName, tenantId);
+            } else if (cacheUpdateRequest.getCacheType().equals("code")) {
+                refreshTenantCodeCache(serviceName, tenantId);
+            } else if (cacheUpdateRequest.getCacheType().equals("user")) {
+                clearUserTenantCache(serviceName, tenantId);
+            } else if (cacheUpdateRequest.getCacheType().equals("all")) {
+                refreshTenantObjectCache(serviceName, tenantId);
+                refreshTenantAuthorityCache(serviceName, tenantId);
+                refreshTenantCodeCache(serviceName, tenantId);
+                clearUserTenantCache(serviceName, tenantId);
+            }
+            return ApiResponseUtil.getSuccessApiResponse(cacheUpdateRequest);
         } catch (Exception e) {
             log.error("allCacheInit fail", e);
             return ApiResponseUtil.getFailureApiResponse();
@@ -46,7 +60,7 @@ public class CacheService {
             synchronized (Cache.objectAuthorityCache) {
                 Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryObjectCache);
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
+            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다. -> 캐시에서 안하고 각 서비스에서 쏘는걸로(덕선사원님 확인후 삭제 부탁드립니다!)
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("createObjectCache fail", e);
@@ -54,7 +68,7 @@ public class CacheService {
         }
     }
 
-    private Map<String, Map<String, Map<String, CflObject>>> getObjectMap(List<CflObject> objectList){
+    private Map<String, Map<String, Map<String, CflObject>>> getObjectMap(List<CflObject> objectList) {
         Map<String, Map<String, Map<String, CflObject>>> newObjectCacheMap = new HashMap<>();
 
         for (CflObject cflObject : objectList) {
@@ -69,9 +83,9 @@ public class CacheService {
             // tenant map이 없는 경우 생성
             String tenantId = cflObject.getTenantId();
             Map<String, CflObject> TenantIdMap = serviceNameMap.get(tenantId);
-            if (TenantIdMap==null) {
+            if (TenantIdMap == null) {
                 TenantIdMap = new HashMap<>();
-                serviceNameMap.put(tenantId,TenantIdMap);
+                serviceNameMap.put(tenantId, TenantIdMap);
             }
 
             // 맵에 오브젝트 저장
@@ -89,7 +103,7 @@ public class CacheService {
         while (serviceNameKeyIterator.hasNext()) {
 
             String serviceName = serviceNameKeyIterator.next();
-            Map<String,Map<String, CflObject>> tenantIdMap = objectMap.get(serviceName);
+            Map<String, Map<String, CflObject>> tenantIdMap = objectMap.get(serviceName);
             if (tenantIdMap != null) {
                 // 테넌트 아이디 keySet 및 iterator 세팅
                 Set<String> tenantIdKeySet = tenantIdMap.keySet();
@@ -126,7 +140,7 @@ public class CacheService {
                                 }
 
                                 // 권한 매핑 세팅
-                                if (objectIdAndAuthorityMapList != null){
+                                if (objectIdAndAuthorityMapList != null) {
                                     List<Authority> authorityList = getAuthorityList(objectId, objectIdAndAuthorityMapList);
                                     object.setAuthorities(authorityList);
                                 }
@@ -142,7 +156,7 @@ public class CacheService {
 
     private List<String> getSubObjectIdList(String objectId, List<Map<String, String>> objectIdAndSubObjectIdMapList) {
 
-        List<String > subObjectIdList = new ArrayList<>();
+        List<String> subObjectIdList = new ArrayList<>();
 
         for (Map<String, String> map : objectIdAndSubObjectIdMapList) {
             if (objectId.equals(map.get("objectId"))) {
@@ -169,7 +183,7 @@ public class CacheService {
     private Authority getConvertingAuthority(Map<String, Object> map) {
         Authority authority = new Authority();
 
-        authority.setAuthoritySequence((long)map.get("authoritySequence"));
+        authority.setAuthoritySequence((long) map.get("authoritySequence"));
         authority.setAuthorityId((String) map.get("authorityId"));
         authority.setAuthorityName((String) map.get("authorityName"));
         authority.setAuthorityType((String) map.get("authorityType"));
@@ -236,7 +250,7 @@ public class CacheService {
         }
     }
 
-    private Map<String, Map<String, Map<String, Authority>>> getAuthorityMap(List<Authority> authorityList){
+    private Map<String, Map<String, Map<String, Authority>>> getAuthorityMap(List<Authority> authorityList) {
         Map<String, Map<String, Map<String, Authority>>> newAuthorityCacheMap = new HashMap<>();
 
         for (Authority authority : authorityList) {
@@ -251,9 +265,9 @@ public class CacheService {
             // tenant map이 없는 경우 생성
             String tenantId = authority.getTenantId();
             Map<String, Authority> TenantIdMap = serviceNameMap.get(tenantId);
-            if (TenantIdMap==null) {
+            if (TenantIdMap == null) {
                 TenantIdMap = new HashMap<>();
-                serviceNameMap.put(tenantId,TenantIdMap);
+                serviceNameMap.put(tenantId, TenantIdMap);
             }
 
             // 맵에 오브젝트 저장
@@ -271,7 +285,7 @@ public class CacheService {
         while (serviceNameKeyIterator.hasNext()) {
 
             String serviceName = serviceNameKeyIterator.next();
-            Map<String,Map<String, Authority>> tenantIdMap = authorityMap.get(serviceName);
+            Map<String, Map<String, Authority>> tenantIdMap = authorityMap.get(serviceName);
             if (tenantIdMap != null) {
                 // 테넌트 아이디 keySet 및 iterator 세팅
                 Set<String> tenantIdKeySet = tenantIdMap.keySet();
@@ -374,7 +388,7 @@ public class CacheService {
         }
     }
 
-    public ApiResponse clearUserCache(){
+    public ApiResponse clearUserCache() {
         try {
             synchronized (Cache.userAuthorityCache) {
                 Cache.userAuthorityCache.clear();
@@ -387,7 +401,7 @@ public class CacheService {
         }
     }
 
-    public ApiResponse clearUserServiceCache(String serviceName){
+    public ApiResponse clearUserServiceCache(String serviceName) {
         try {
             synchronized (Cache.userAuthorityCache) {
                 if (Cache.userAuthorityCache.get(serviceName) != null) {
@@ -442,7 +456,7 @@ public class CacheService {
     private Map<String, Map<String, Map<String, Code>>> getCodeMap(List<Code> codeList) {
         Map<String, Map<String, Map<String, Code>>> newCodeCacheMap = new HashMap<>();
 
-        for (Code code : codeList){
+        for (Code code : codeList) {
 
             // service map이 없는 경우 생성
             String serviceName = code.getServiceName();
@@ -476,7 +490,7 @@ public class CacheService {
         while (serviceNameKeyIterator.hasNext()) {
 
             String serviceName = serviceNameKeyIterator.next();
-            Map<String,Map<String, Code>> tenantIdMap = codeMap.get(serviceName);
+            Map<String, Map<String, Code>> tenantIdMap = codeMap.get(serviceName);
             if (tenantIdMap != null) {
                 // 테넌트 아이디 keySet 및 iterator 세팅
                 Set<String> tenantIdKeySet = tenantIdMap.keySet();
@@ -514,7 +528,7 @@ public class CacheService {
                                 }
 
                                 // 다국어 정보 세팅
-                                if (codeMultiLanguageMapList != null){
+                                if (codeMultiLanguageMapList != null) {
                                     Map<String, String> multiLanguageMap = getMultiLanguageMap(codeId, codeMultiLanguageMapList);
                                     code.setMultiLanguageMap(multiLanguageMap);
                                 }
@@ -579,6 +593,7 @@ public class CacheService {
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
+
     public ApiResponse refreshServiceCodeCache(String serviceName) {
         try {
             List<Code> codeList = codeService.getServiceCodes(serviceName);

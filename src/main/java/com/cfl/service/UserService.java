@@ -3,6 +3,7 @@ package com.cfl.service;
 import com.cfl.cache.Cache;
 import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Authority;
+import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.User;
 import com.cfl.mapper.UserMapper;
 import com.cfl.util.ApiResponseUtil;
@@ -23,7 +24,7 @@ public class UserService {
     @Autowired
     private MappingService mappingService;
     @Autowired
-    private CacheService cacheService;
+    private NetworkService networkService;
     @Autowired
     private HistoryService historyService;
 
@@ -34,7 +35,7 @@ public class UserService {
             user.setUserId(userId);
 
             userMapper.insertUser(user);
-            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;
@@ -51,7 +52,7 @@ public class UserService {
             user.setUserId(userId);
 
             userMapper.updateUser(user);
-            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;
@@ -66,7 +67,7 @@ public class UserService {
             User user = new User(serviceName, tenantId, userId);
 
             userMapper.deleteUser(user);
-            cacheService.clearUserTenantCache(serviceName, user.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
             historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
             return successApiResponse;

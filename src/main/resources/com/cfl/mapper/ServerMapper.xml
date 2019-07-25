@@ -7,6 +7,7 @@
         <result property="serverName" column="svr_nm"/>
         <result property="serviceName" column="svc_nm"/>
         <result property="tenantId" column="tnnt_id"/>
+        <result property="portNumber" column="port_no"/>
     </resultMap>
 
 
@@ -62,20 +63,23 @@
             , #{server.serverName})
     </insert>
 
-    <select id="selectProvideServer" resultMap="Server">
+    <select id="selectProvideServerByServerIp" resultMap="Server">
         SELECT
             *
         FROM
             cfl_provide_server
         WHERE
             svr_ip = #{server.serverIp}
+            AND svc_nm = #{server.serviceName}
     </select>
 
-    <select id="selectAllProvideServerIp" resultType="String">
+    <select id="selectProvideServerByServiceName" resultMap="Server">
         SELECT
-            svr_ip
+            *
         FROM
             cfl_provide_server
+        WHERE
+            svc_nm = #{serviceName}
     </select>
 
     <select id="selectRegExpServerList" resultMap="Server">

@@ -18,7 +18,7 @@ public class AuthorityService{
     @Autowired
     private UserService userService;
     @Autowired
-    private CacheService cacheService;
+    private NetworkService networkService;
     @Autowired
     private HistoryService historyService;
     @Autowired
@@ -43,7 +43,7 @@ public class AuthorityService{
             authority.setAuthorityId(authorityId);
 
             authorityMapper.insertAuthority(authority);
-            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
@@ -59,7 +59,7 @@ public class AuthorityService{
             authority.setAuthorityId(authorityId);
 
             authorityMapper.updateAuthority(authority);
-            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
@@ -76,7 +76,7 @@ public class AuthorityService{
             mappingService.removeAuthorityMapping(authority);
             authorityMapper.deleteAuthority(authority);
 
-            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(authority);
             historyService.createHistory(serviceName, authority.getTenantId(), authority, successApiResponse);
             return successApiResponse;
@@ -125,7 +125,7 @@ public class AuthorityService{
                 }
             }
 
-            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
 
             ApiResponse apiResponse;
 
@@ -150,7 +150,7 @@ public class AuthorityService{
                 requestUser.setTenantId(authority.getTenantId());
                 mappingService.removeAuthorityUserMapping(authorityId, requestUser);
             }
-            cacheService.refreshTenantAuthorityCache(serviceName, authority.getTenantId());
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(requestUsers);
             historyService.createHistory(serviceName, authority.getTenantId(), requestUsers, successApiResponse);
             return successApiResponse;

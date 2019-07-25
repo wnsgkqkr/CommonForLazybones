@@ -1,5 +1,6 @@
 package com.cfl.service;
 
+import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.Server;
 import com.cfl.domain.ApiResponse;
 import com.cfl.mapper.ServerMapper;
@@ -8,8 +9,10 @@ import com.cfl.util.Constant;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -105,10 +108,10 @@ public class NetworkService {
             InetAddress ip = InetAddress.getLocalHost();
             provideServer.setServerIp(ip.getHostAddress());
             provideServer.setServerName(ip.getHostName());
-            provideServer.setServiceName("CFL");
+            provideServer.setServiceName("cfl");
             provideServer.setTenantId(Constant.DEFAULT_TENANT_ID);
 
-            if (serverMapper.selectProvideServer(provideServer) == null) {
+            if (serverMapper.selectProvideServerByServerIp(provideServer) == null) {
                 serverMapper.insertProvideServer(provideServer);
                 serverMapper.insertAllowedServer(provideServer);
             }
@@ -117,14 +120,18 @@ public class NetworkService {
         }
     }
 
-    public void sendProvideServersToInit() {
-        List<String> provideServerIpList = serverMapper.selectAllProvideServerIp();
+    public void sendProvideServersToInit(String serviceName, CacheUpdateRequest cacheUpdateRequest) {
+        List<Server> provideServerList = serverMapper.selectProvideServerByServiceName(serviceName);
 
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
-        for (String provideServerIp : provideServerIpList) {
-            ApiResponse apiResponse = restTemplate.postForObject(provideServerIp+"/init", provideServerIp, ApiResponse.class);
-            log.info(new Gson().toJson(apiResponse));
+        AsyncRestTemplate asyncRestTemplate = new AsyncRestTemplate();
+        asyncRestTemplate.getMessageConverters().add(new StringHttpMessageConverter());
+        for (Server provideServer : provideServerList) {
+            String url = "http://"+provideServer.getServerIp()+":"+provideServer.getPortNumber()+"/"+provideServer.getServiceName()+"/cache/init";
+            try {
+                asyncRestTemplate.postForEntity(url, new HttpEntity<>(cacheUpdateRequest), String.class);
+            } catch (Exception e) {
+                continue;
+            }
         }
     }
 }
