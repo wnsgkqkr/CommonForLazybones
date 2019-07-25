@@ -53,7 +53,10 @@ public class CodeService{
             if (code.getParentCodeId() == null) {
                 code.setParentCodeId(DEFAULT_PARENT_CODE_ID);
             }
-
+            // 부모 코드아이디와 자신의 아이디가 같을때 리턴
+            if (code.getParentCodeId().equals(code.getCodeId())) {
+                return ApiResponseUtil.getFailureApiResponse();
+            }
             codeMapper.insertCode(code);
             codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
 
@@ -73,6 +76,10 @@ public class CodeService{
             code.setTenantId(tenantId);
             code.setCodeId(codeId);
 
+            // 부모 코드아이디와 자신의 아이디가 같을때 리턴
+            if (code.getParentCodeId().equals(code.getCodeId())) {
+                return ApiResponseUtil.getFailureApiResponse();
+            }
             // 다국어 정보의 경우 기존 데이터를 지우고 새로 생성한다.
             codeMapper.updateCode(code);
             codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
