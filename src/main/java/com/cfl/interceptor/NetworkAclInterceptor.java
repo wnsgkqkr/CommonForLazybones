@@ -28,6 +28,7 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
         try {
             Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
+            //if service hasn't tenantId then set default tenantId
             if (pathVariables.get("tenantId") == null) {
                 pathVariables.put("tenantId", Constant.DEFAULT_TENANT_ID);
             }

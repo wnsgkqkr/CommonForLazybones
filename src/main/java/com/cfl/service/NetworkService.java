@@ -120,6 +120,7 @@ public class NetworkService {
         }
     }
 
+    //해당 서비스들의 캐시를 업데이트하기위해 리퀘스트 온대로 해당 서비스를 제공하는 서버들에게 비동기적으로 api전송 (cfl도 이방식으로 캐시 갱신)
     public void sendProvideServersToInit(String serviceName, CacheUpdateRequest cacheUpdateRequest) {
         List<Server> provideServerList = serverMapper.selectProvideServerByServiceName(serviceName);
 

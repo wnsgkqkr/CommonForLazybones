@@ -24,6 +24,7 @@ public class CacheService {
     @Autowired
     private CodeService codeService;
 
+    //cfl 서비스의 캐시 갱신
     public ApiResponse cacheInit(CacheUpdateRequest cacheUpdateRequest) {
         try {
             String tenantId = cacheUpdateRequest.getTenantId();
