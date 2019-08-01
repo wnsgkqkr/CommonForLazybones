@@ -25,10 +25,14 @@ public class HistoryService {
         String requestMethod = httpRequest.getMethod();
         String requestUrl = httpRequest.getRequestURI();
         String requestContents = gson.toJson(requestObject);
-        String returnMessage = response.getHeader().getResultMessage();
         String returnContents = gson.toJson(response);
         String requestPerson = null;
         String registerServerIp = httpRequest.getRemoteAddr();
+        String returnMessage = null;
+
+        if (response != null) {
+            returnMessage = response.getHeader().getResultMessage();
+        }
 
         History history = new History(serviceName, tenantId, requestMethod, requestUrl, requestContents, returnMessage, returnContents, requestPerson, registerServerIp);
 

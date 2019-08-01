@@ -29,135 +29,212 @@ public class UserService {
     private HistoryService historyService;
 
     public ApiResponse createUser(String serviceName, String tenantId, String userId, User user) {
+        ApiResponse apiResponse;
+
         try {
             user.setServiceName(serviceName);
             user.setTenantId(tenantId);
             user.setUserId(userId);
 
-            userMapper.insertUser(user);
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
-            return successApiResponse;
+            User selectedUser = userMapper.selectUser(user);
+
+            // 유저 중복 생성의 경우
+            if (selectedUser != null) {
+                apiResponse = ApiResponseUtil.getDuplicateCreationApiResponse();
+            } else {
+                userMapper.insertUser(user);
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(user);
+            }
         } catch (Exception e) {
             log.error("createUser fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, user.getTenantId(), user, apiResponse);
+        return apiResponse;
     }
 
     public ApiResponse modifyUser(String serviceName, String tenantId, String userId, User user) {
+        ApiResponse apiResponse;
+
         try {
             user.setServiceName(serviceName);
             user.setTenantId(tenantId);
             user.setUserId(userId);
 
-            userMapper.updateUser(user);
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
-            return successApiResponse;
+            User selectedUser = userMapper.selectUser(user);
+
+            // 존재하지 않는 유저를 수정하려는 경우
+            if (selectedUser == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+            } else {
+                userMapper.updateUser(user);
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(user);
+            }
         } catch (Exception e) {
             log.error("modifyUser fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, user.getTenantId(), user, apiResponse);
+        return apiResponse;
     }
 
     public ApiResponse removeUser(String serviceName, String tenantId, String userId) {
-        try {
-            User user = new User(serviceName, tenantId, userId);
+        ApiResponse apiResponse;
+        User user = new User(serviceName, tenantId, userId);
 
-            userMapper.deleteUser(user);
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(user);
-            historyService.createHistory(serviceName, user.getTenantId(), user, successApiResponse);
-            return successApiResponse;
+        try {
+            User selectedUser = userMapper.selectUser(user);
+
+            // 존재하지 않는 유저을 수정하려는 경우
+            if (selectedUser == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+            } else {
+                userMapper.deleteUser(user);
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "user"));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(user);
+            }
         } catch (Exception e) {
             log.error("removeUser fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, user.getTenantId(), user, apiResponse);
+        return apiResponse;
     }
 
-    public ApiResponse getUser(String serviceName, String tenantId, String userId){
+    public ApiResponse getUser(String serviceName, String tenantId, String userId) {
+        ApiResponse apiResponse;
+        User user = new User(serviceName, tenantId, userId);
+
         try {
-            User user = new User(serviceName, tenantId, userId);
+            User userFromCache = getUserFromCache(user);
 
-            Map<String, User> userMapFromCache = getUserMapFromCache(user);
-            User userFromCache = userMapFromCache.get(userId);
-
+            // 캐시에 유저가 존재할 경우 캐시에서 가져온 유저 반환, 없을 경우 DB에서 가져와 캐시에 저장 후 반환
             if (userFromCache != null) {
-                return ApiResponseUtil.getSuccessApiResponse(userFromCache);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(userFromCache);
             } else {
-                user = userMapper.selectUser(user);
-                List<Authority> authorityList = mappingService.getUserAuthorities(user);
-                if (authorityList == null) {
-                    authorityList = Collections.emptyList();
-                }
-                user.setUserToAuthorities(authorityList);
+                User userFromDB = getUserFromDBAndSaveCache(user);
 
-                synchronized (Cache.userAuthorityCache) {
-                    Cache.userAuthorityCache.get(serviceName).get(user.getTenantId()).put(userId, user);
+                // DB에도 없는 경우
+                if (userFromDB == null) {
+                    apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                } else {
+                    apiResponse = ApiResponseUtil.getSuccessApiResponse(userFromDB);
                 }
-
-                return ApiResponseUtil.getSuccessApiResponse(user);
             }
         } catch (Exception e) {
             log.error("getUser fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
     public ApiResponse getUserAuthoritiesMapping(String serviceName, String tenantId, String userId) {
+        ApiResponse apiResponse;
+        User user = new User(serviceName, tenantId, userId);
+
         try {
-            User user = new User(serviceName, tenantId, userId);
-            Map<String, User> userMapFromCache = getUserMapFromCache(user);
-            User userFromCache = userMapFromCache.get(userId);
+            List<Authority> authorityList = getUserToAuthoritiesFromCache(user);
 
-            if (userFromCache != null) {
-                return ApiResponseUtil.getSuccessApiResponse(userFromCache.getUserToAuthorities());
+            // 캐시에 유저 권한리스트가 존재할 경우 캐시에서 가져온 권한리스트 반환, 없을 경우 DB에서 가져와 캐시에 저장 후 반환
+            if (authorityList != null) {
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(authorityList);
             } else {
-                List<Authority> authorityList = mappingService.getUserAuthorities(user);
-                if (authorityList == null) {
-                    authorityList = Collections.emptyList();
-                }
-                user.setUserToAuthorities(authorityList);
+                User userFromDB = getUserFromDBAndSaveCache(user);
 
-                synchronized (Cache.userAuthorityCache) {
-                    Cache.userAuthorityCache.get(serviceName).get(user.getTenantId()).put(user.getUserId(), user);
+                // DB에도 없는 경우
+                if (userFromDB == null) {
+                    apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                } else {
+                    apiResponse = ApiResponseUtil.getSuccessApiResponse(userFromDB.getUserToAuthorities());
                 }
-
-                return ApiResponseUtil.getSuccessApiResponse(authorityList);
             }
         } catch (Exception e) {
             log.error("getUserAuthoritiesMapping fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
-    private Map<String, User> getUserMapFromCache(User user){
+    private User getUserFromDBAndSaveCache(User user) {
+        User userFromDB = userMapper.selectUser(user);
+
+        // DB에도 없는 경우 null 반환
+        if (userFromDB == null) {
+            return null;
+        }
+
+        List<Authority> authorityListFromDB = mappingService.getUserAuthorities(userFromDB);
+
+        if (authorityListFromDB == null) {
+            authorityListFromDB = Collections.emptyList();
+        }
+        userFromDB.setUserToAuthorities(authorityListFromDB);
+
+        // 캐시에 저장
+        synchronized (Cache.userAuthorityCache) {
+            Cache.userAuthorityCache.get(userFromDB.getServiceName()).get(userFromDB.getTenantId()).put(userFromDB.getUserId(), userFromDB);
+        }
+
+        return userFromDB;
+    }
+
+    private Map<String, User> getTenantUserMapFromCache(User user) {
+        // User 캐시의 경우 미리 세팅을 안하기 때문에 캐시에 없는 경우 Map을 생성하여 반환한다.
         String serviceName = user.getServiceName();
-        Map<String, Map<String, User>> serviceNameMap = Cache.userAuthorityCache.get(serviceName);
-        if (serviceNameMap == null) {
-            serviceNameMap = new HashMap<>();
-            Cache.userAuthorityCache.put(serviceName, serviceNameMap);
+        Map<String, Map<String, User>> serviceMapFromCache = Cache.userAuthorityCache.get(serviceName);
+        if (serviceMapFromCache == null) {
+            serviceMapFromCache = new HashMap<>();
+            synchronized (Cache.userAuthorityCache) {
+                Cache.userAuthorityCache.put(serviceName, serviceMapFromCache);
+            }
         }
 
         String tenantId = user.getTenantId();
-        Map<String, User> TenantIdMap = serviceNameMap.get(tenantId);
-        if (TenantIdMap == null) {
-            TenantIdMap = new HashMap<>();
-            Cache.userAuthorityCache.get(serviceName).put(tenantId, TenantIdMap);
+        Map<String, User> TenantMapFromCache = serviceMapFromCache.get(tenantId);
+        if (TenantMapFromCache == null) {
+            TenantMapFromCache = new HashMap<>();
+            synchronized (Cache.userAuthorityCache) {
+                Cache.userAuthorityCache.get(serviceName).put(tenantId, TenantMapFromCache);
+            }
         }
 
-        return TenantIdMap;
+        return TenantMapFromCache;
     }
 
-    public User checkExistAndCreateUser(User needCheckUser) {
-        User getUser = userMapper.selectUser(needCheckUser);
-        if (getUser != null) {
-            return getUser;
+    private User getUserFromCache(User user) {
+        // 캐시에서 찾는 유저가 없는 경우 null 반환
+        Map<String, User> tenantMapFromCache = getTenantUserMapFromCache(user);
+        if (tenantMapFromCache == null) {
+            return null;
+        }
+
+        return tenantMapFromCache.get(user.getUserId());
+    }
+
+    private List<Authority> getUserToAuthoritiesFromCache(User user) {
+        User UserFromCache = getUserFromCache(user);
+        if (UserFromCache == null) {
+            return null;
+        }
+
+        return UserFromCache.getUserToAuthorities();
+    }
+
+    public User checkExistUserAndCreateUser(User userWhoNeedConfirmation) {
+        User selectedUser = userMapper.selectUser(userWhoNeedConfirmation);
+
+        if (selectedUser != null) {
+            return selectedUser;
         } else {
-            userMapper.insertUser(needCheckUser);
-            return needCheckUser;
+            userMapper.insertUser(userWhoNeedConfirmation);
+            return userWhoNeedConfirmation;
         }
     }
 }
