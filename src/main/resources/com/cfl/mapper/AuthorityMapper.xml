@@ -51,7 +51,7 @@
             AND auth_id = #{authority.authorityId}
     </select>
 
-    <insert id="insertAuthority">
+    <insert id="insertAuthority" useGeneratedKeys="true" keyProperty="authoritySequence">
         INSERT INTO
             cfl_authority (auth_id, auth_nm, auth_type, tnnt_id, svc_nm)
         VALUE

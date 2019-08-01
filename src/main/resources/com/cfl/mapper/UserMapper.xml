@@ -10,7 +10,7 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <insert id="insertUser">
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="userSequence">
         INSERT INTO
             cfl_user (user_id, user_type, tnnt_id, user_seq, svc_nm)
         VALUE
