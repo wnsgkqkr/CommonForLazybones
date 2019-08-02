@@ -9,13 +9,14 @@ import java.util.Map;
 @Getter
 @Setter
 public class Code {
+    private Long codeSequence;
     private String codeId;
     private String codeName;
     private String codeDescription;
     private Boolean isUsed;
     private int order;
     private String multiLanguageCode;
-    private String parentCodeId;
+    private String fullSequencePath;
     private String tenantId;
     private String serviceName;
     
@@ -24,6 +25,9 @@ public class Code {
 
     public Code() { }
 
+    public Code(Long codeSequence) {
+        this.codeSequence = codeSequence;
+    }
     public Code(String serviceName, String tenantId) {
         this.serviceName = serviceName;
 
@@ -37,6 +41,11 @@ public class Code {
     public Code(String serviceName, String tenantId, String codeId) {
         this(serviceName, tenantId);
         this.codeId = codeId;
+    }
+
+    public Code(String serviceName, String tenantId, Long codeSequence) {
+        this(serviceName, tenantId);
+        this.codeSequence = codeSequence;
     }
 
     public void setTenantId(String tenantId) {
