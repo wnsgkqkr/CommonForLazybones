@@ -28,12 +28,8 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
         try {
             Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
-            //if service hasn't tenantId then set default tenantId
-            if (pathVariables.get("tenantId") == null) {
-                pathVariables.put("tenantId", Constant.DEFAULT_TENANT_ID);
-            }
 
-            if (networkService.isAllowedServer(pathVariables.get("serviceName"), pathVariables.get("tenantId"), request.getRemoteAddr())) {
+            if (networkService.isAllowedServer(pathVariables.get("serviceName"), request.getRemoteAddr())) {
                 return true;
             }
         } catch (Exception e) {

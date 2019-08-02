@@ -144,7 +144,7 @@ public class CodeService{
 
             // 캐시에 코드가 없는 경우
             if (codeFromCache == null) {
-                apiResponse = ApiResponseUtil.getMissingValueResponse();
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(codeFromCache);
             }
@@ -186,7 +186,7 @@ public class CodeService{
             if (codeMap != null) {
                 return ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                return ApiResponseUtil.getMissingValueResponse();
+                return ApiResponseUtil.getMissingValueApiResponse();
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);
@@ -202,7 +202,7 @@ public class CodeService{
             if (codeMap != null) {
                 return ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                return ApiResponseUtil.getMissingValueResponse();
+                return ApiResponseUtil.getMissingValueApiResponse();
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);

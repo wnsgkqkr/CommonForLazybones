@@ -17,5 +17,5 @@ public interface ServerMapper {
     Server selectProvideServerByServerIp(@Param("server") Server server);
     List<Server> selectProvideServerByServiceName(String serviceName);
 
-    List<Server> selectRegExpServerList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
+    List<Server> selectRegExpServerList(@Param("serviceName") String serviceName);
 }

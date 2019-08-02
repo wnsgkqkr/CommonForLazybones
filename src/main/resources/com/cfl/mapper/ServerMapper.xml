@@ -6,17 +6,15 @@
         <id property="serverIp" column="svr_ip" />
         <result property="serverName" column="svr_nm"/>
         <result property="serviceName" column="svc_nm"/>
-        <result property="tenantId" column="tnnt_id"/>
         <result property="portNumber" column="port_no"/>
     </resultMap>
 
 
     <insert id="insertAllowedServer">
         INSERT INTO
-            cfl_allowed_server (svr_ip, tnnt_id, svr_nm, svc_nm)
+            cfl_allowed_server (svr_ip, svr_nm, svc_nm)
         VALUE
             (#{server.serverIp}
-            , #{server.tenantId}
             , #{server.serverName}
             , #{server.serviceName})
     </insert>
@@ -26,12 +24,10 @@
             cfl_allowed_server
         SET
             svr_ip = #{server.serverIp}
-            , tnnt_id = #{server.tenantId}
             , svr_nm = #{server.serverName}
             , svc_nm = #{server.serviceName}
         WHERE
             svc_nm = #{server.serviceName}
-            AND tnnt_id = #{server.tenantId}
             AND svr_ip = #{server.serverIp}
     </update>
 
@@ -40,7 +36,6 @@
             cfl_allowed_server
         WHERE
             svc_nm = #{server.serviceName}
-            AND tnnt_id = #{server.tenantId}
             AND svr_ip = #{server.serverIp}
     </delete>
 
@@ -51,7 +46,6 @@
             cfl_allowed_server
         WHERE
             svc_nm = #{server.serviceName}
-            AND tnnt_id = #{server.tenantId}
             AND svr_ip = #{server.serverIp}
     </select>
 
@@ -90,6 +84,5 @@
         WHERE
             svr_ip LIKE '^%'
             AND svc_nm = #{serviceName}
-            AND tnnt_id = #{tenantId}
     </select>
 </mapper>
