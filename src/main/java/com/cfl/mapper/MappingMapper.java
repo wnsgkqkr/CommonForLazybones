@@ -28,4 +28,10 @@ public interface MappingMapper {
     List<Authority> selectObjectAuthorities(@Param("object") CflObject object);
     List<User> selectAuthorityUsers(@Param("authority") Authority authority);
     List<Authority> selectUserAuthorities(@Param("user") User user);
+
+    boolean isExistObjectSubObjectMapping(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    void insertObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    void deleteObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    List<String> selectTenantSubObjectIdList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
+    List<String> selectTenantParentObjectIdList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 }

@@ -307,4 +307,95 @@
 	    ORDER BY
 	        auth.auth_nm
     </select>
+
+    <select id="isExistObjectSubObjectMapping" resultType="boolean">
+        SELECT
+	        if(count(*) > 0, 'true', 'false')
+        FROM
+            cfl_object subob
+            INNER JOIN
+                cfl_object_subobject_mapping osom
+            ON
+                subob.objt_seq = osom.sub_objt_seq
+            INNER JOIN
+                cfl_object ob
+            ON
+                osom.objt_seq = ob.objt_seq
+        WHERE
+           ob.objt_id = #{objectId}
+           AND subob.objt_id = #{subObject.objectId}
+    </select>
+
+    <insert id="insertObjectSubObject">
+        INSERT INTO
+            cfl_object_subobject_mapping (objt_seq, sub_objt_seq)
+        VALUES(
+            (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{subObject.serviceName}
+                AND tnnt_id = #{subObject.tenantId}
+                AND objt_id =#{objectId})
+            ,
+            (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{subObject.serviceName}
+                AND tnnt_id = #{subObject.tenantId}
+                AND objt_id = #{subObject.objectId})
+            )
+    </insert>
+
+    <delete id="deleteObjectSubObject">
+        DELETE FROM
+            cfl_object_subobject_mapping
+        WHERE
+            objt_seq = (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{subObject.serviceName}
+                AND tnnt_id = #{subObject.tenantId}
+                AND objt_id =#{objectId})
+            AND
+            sub_objt_seq = (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{subObject.serviceName}
+                AND tnnt_id = #{subObject.tenantId}
+                AND objt_id = #{subObject.objectId})
+    </delete>
+
+    <select id="selectTenantSubObjectIdList" resultType="String">
+        SELECT DISTINCT ob.objt_id
+        FROM
+            cfl_object_subobject_mapping osom
+            INNER JOIN
+                cfl_object ob
+            ON
+                osom.sub_objt_seq = ob.objt_seq
+        WHERE
+            ob.tnnt_id = #{tenantId}
+            AND svc_nm = #{serviceName};
+    </select>
+
+    <select id="selectTenantParentObjectIdList" resultType="String">
+        SELECT DISTINCT ob.objt_id
+        FROM
+            cfl_object_subobject_mapping osom
+            INNER JOIN
+                cfl_object ob
+            ON
+                osom.objt_seq = ob.objt_seq
+        WHERE
+            ob.tnnt_id = #{tenantId}
+            AND svc_nm = #{serviceName};
+    </select>
 </mapper>

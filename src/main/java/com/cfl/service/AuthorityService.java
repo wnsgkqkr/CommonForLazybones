@@ -143,27 +143,34 @@ public class AuthorityService{
         Authority authority = new Authority(serviceName, tenantId, authorityId);
 
         try {
-            List<User> duplicatedUserList = new ArrayList<>();
+            Authority authorityFromCache = getAuthorityFromCache(authority);
 
-            for (User requestUser : requestUsers) {
-                requestUser.setServiceName(serviceName);
-                requestUser.setTenantId(authority.getTenantId());
-                requestUser = userService.checkExistUserAndCreateUser(requestUser);
-
-                // 이미 매핑이 되어있는 경우 중복유저리스트에 추가한다.
-                if (mappingService.isExistAuthorityUserMapping(authorityId, requestUser)) {
-                    duplicatedUserList.add(requestUser);
-                } else {
-                    mappingService.createAuthorityUserMappting(authorityId, requestUser);
-                }
-            }
-
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
-
-            if (duplicatedUserList.size() == 0) {
-                apiResponse = ApiResponseUtil.getSuccessApiResponse(requestUsers);
+            // 권한이 없는 경우
+            if (authorityFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             } else {
-                apiResponse =  ApiResponseUtil.getDuplicateMappingApiResponse(duplicatedUserList);
+                List<User> duplicatedUserList = new ArrayList<>();
+
+                for (User requestUser : requestUsers) {
+                    requestUser.setServiceName(serviceName);
+                    requestUser.setTenantId(authority.getTenantId());
+                    requestUser = userService.checkExistUserAndCreateUser(requestUser);
+
+                    // 이미 매핑이 되어있는 경우 중복유저리스트에 추가한다.
+                    if (mappingService.isExistAuthorityUserMapping(authorityId, requestUser)) {
+                        duplicatedUserList.add(requestUser);
+                    } else {
+                        mappingService.createAuthorityUserMappting(authorityId, requestUser);
+                    }
+                }
+
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "authority"));
+
+                if (duplicatedUserList.size() == 0) {
+                    apiResponse = ApiResponseUtil.getSuccessApiResponse(requestUsers);
+                } else {
+                    apiResponse =  ApiResponseUtil.getDuplicateMappingApiResponse(duplicatedUserList);
+                }
             }
         } catch (Exception e) {
             log.error("createAuthorityUsersMapping fail", e);
@@ -257,7 +264,7 @@ public class AuthorityService{
         return serviceMapFromCache.get(authority.getTenantId());
     }
 
-    private Authority getAuthorityFromCache(Authority authority) {
+    public Authority getAuthorityFromCache(Authority authority) {
         // 캐시에서 찾는 권한이 없는 경우 null 반환
         Map<String, Authority> tenantMapFromCache = getTenantAuthorityMapFromCache(authority);
         if (tenantMapFromCache == null) {

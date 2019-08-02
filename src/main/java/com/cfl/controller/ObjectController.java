@@ -18,6 +18,8 @@ public class ObjectController {
     private static final String OBJECT_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}";
     private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT = "/{serviceName}/{tenantId}/object/{objectId}/authorities";
     private static final String OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}/authorities";
+    private static final String OBJECT_MAPPING_SUB_OBJECTS_URL_WITH_TENANT = "/{serviceName}/{tenantId}/object/{objectId}/sub-objects";
+    private static final String OBJECT_MAPPING_SUB_OBJECTS_URL_WITHOUT_TENANT = "/{serviceName}/object/{objectId}/sub-objects";
 
     @PostMapping(value = {OBJECT_MAPPING_AUTHORITIES_URL_WITH_TENANT, OBJECT_MAPPING_AUTHORITIES_URL_WITHOUT_TENANT})
     public ApiResponse createObjectAuthoritiesMapping(@PathVariable("serviceName") String serviceName,
@@ -76,5 +78,21 @@ public class ObjectController {
     public ApiResponse getTenantObjects(@PathVariable("serviceName") String serviceName,
                                         @PathVariable(name = "tenantId", required = false) String tenantId) {
         return objectService.getTenantObjectMap(serviceName, tenantId);
+    }
+
+    @PostMapping(value = {OBJECT_MAPPING_SUB_OBJECTS_URL_WITH_TENANT, OBJECT_MAPPING_SUB_OBJECTS_URL_WITHOUT_TENANT})
+    public ApiResponse createObjectSubObjectMapping(@PathVariable("serviceName") String serviceName,
+                                                    @PathVariable(name = "tenantId", required = false) String tenantId,
+                                                    @PathVariable("objectId") String objectId,
+                                                    @RequestBody List<CflObject> requestSubObjects) {
+        return objectService.createObjectSubObjectsMapping(serviceName, tenantId, objectId, requestSubObjects);
+    }
+
+    @DeleteMapping(value = {OBJECT_MAPPING_SUB_OBJECTS_URL_WITH_TENANT, OBJECT_MAPPING_SUB_OBJECTS_URL_WITHOUT_TENANT})
+    public ApiResponse deleteObjectSubObjectMapping(@PathVariable("serviceName") String serviceName,
+                                                    @PathVariable(name = "tenantId", required = false) String tenantId,
+                                                    @PathVariable("objectId") String objectId,
+                                                    @RequestBody List<CflObject> requestSubObjects) {
+        return objectService.removeObjectSubObjectsMapping(serviceName, tenantId, objectId, requestSubObjects);
     }
 }
