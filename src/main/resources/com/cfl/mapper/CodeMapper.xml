@@ -6,20 +6,20 @@
         namespace="com.cfl.mapper.CodeMapper">
 
     <resultMap id="Code" type="Code">
-        <id property="codeId" column="cd_id" />
+        <id property="codeSequence" column="cd_seq"/>
+        <result property="codeId" column="cd_id" />
         <result property="codeName" column="cd_nm"/>
         <result property="codeDescription" column="cd_desc"/>
         <result property="isUsed" column="use_yn"/>
         <result property="order" column="ord"/>
         <result property="multiLanguageCode" column="mlng_cd"/>
-        <result property="parentCodeId" column="prnt_cd_id"/>
         <result property="tenantId" column="tnnt_id"/>
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
-    <insert id="insertCode">
+    <insert id="insertCode" parameterType="Code" useGeneratedKeys="true" keyProperty="code.codeSequence" keyColumn="cd_seq">
         INSERT INTO
-            cfl_code (cd_id, cd_nm, cd_desc, use_yn, ord, mlng_cd, prnt_cd_id, tnnt_id, svc_nm)
+            cfl_code (cd_id, cd_nm, cd_desc, use_yn, ord, mlng_cd, tnnt_id, svc_nm)
         VALUE
             (#{code.codeId}
             , #{code.codeName}
@@ -27,7 +27,6 @@
             , #{code.isUsed}
             , #{code.order}
             , #{code.multiLanguageCode}
-            , #{code.parentCodeId}
             , #{code.tenantId}
             , #{code.serviceName})
     </insert>
@@ -53,8 +52,7 @@
             , tnnt_id = #{code.tenantId}
             , svc_nm = #{code.serviceName}
         WHERE
-            cd_id = #{code.codeId}
-            AND prnt_cd_id = #{code.parentCodeId}
+            cd_seq = #{code.codeSequence}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </update>
@@ -63,8 +61,7 @@
         DELETE FROM
             cfl_code
         WHERE
-            cd_id = #{code.codeId}
-            AND prnt_cd_id = #{code.parentCodeId}
+            cd_seq = #{code.codeSequence}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </delete>
@@ -82,8 +79,7 @@
         FROM
             cfl_code
         WHERE
-            cd_id = #{code.codeId}
-            AND prnt_cd_id = #{code.parentCodeId}
+            cd_seq = #{code.codeSequence}
             AND svc_nm = #{code.serviceName}
             AND tnnt_id = #{code.tenantId}
     </select>
@@ -116,7 +112,7 @@
 
     <select id="selectCodeMultiLanguageMapList" resultType="Map">
         SELECT
-            cd.cd_id AS codeId
+            cd.cd_seq AS codeSequence
             , cdml.mlng_nat AS nation
             , cdml.mlng_nm AS multiLanguageName
         FROM

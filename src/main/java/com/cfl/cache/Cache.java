@@ -13,4 +13,5 @@ public class Cache {
     public static Map<String,Map<String,Map<String, Authority>>> authorityUserCache = new HashMap<>();
     public static Map<String,Map<String,Map<String, User>>> userAuthorityCache = new HashMap<>();
     public static Map<String,Map<String,Map<String, Code>>> codeCache = new HashMap<>();
+    public static Map<String,Map<String,Map<String, Code>>> usingCodeCache = new HashMap<>();
 }
