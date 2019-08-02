@@ -3,6 +3,7 @@ package com.cfl.controller;
 import com.cfl.domain.ApiResponse;
 import com.cfl.domain.Code;
 import com.cfl.service.CodeService;
+import com.cfl.util.WildcardPathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,42 +12,64 @@ public class CodeController {
     @Autowired
     private CodeService codeService;
 
-    private static final String CODE_URL_WITH_TENANT = "/{serviceName}/{tenantId}/code/{codeId}";
-    private static final String CODE_URL_WITHOUT_TENANT = "/{serviceName}/code/{codeId}";
+    //urlPath = /{serviceName}/option: {tenantId}/PID/PID/PID/PID/..../ID -> fullIdPath = [{PID},{PID},{PID},....,{ID}]
+    private static final String CODE_URL_WITH_TENANT = "/{serviceName}/{tenantId}/code/**";
+    private static final String CODE_URL_WITHOUT_TENANT = "/{serviceName}/code/**";
 
     @PostMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse createCode(@PathVariable("serviceName") String serviceName,
                                   @PathVariable(name = "tenantId", required = false) String tenantId,
-                                  @PathVariable("codeId") String codeId,
+                                  @WildcardPathVariable String[] fullIdPath,
                                   @RequestBody Code code) {
-        return codeService.createCode(serviceName, tenantId, codeId, code);
+        return codeService.createCode(serviceName, tenantId, fullIdPath, code);
+    }
+
+    @PostMapping(value = {"/{serviceName}/{tenantId}/code/mapping/{codeSequence}/{subCodeSequence}", "/{serviceName}/code/mapping/{codeSequence}/{subCodeSequence}"})
+    public ApiResponse createCodeMapping(@PathVariable("serviceName") String serviceName,
+                                         @PathVariable(name = "tenantId", required = false) String tenantId,
+                                         @PathVariable("codeSequence") Long codeSequence,
+                                         @PathVariable("subCodeSequence") Long subCodeSequence) {
+        return codeService.createCodeMapping(serviceName, tenantId, codeSequence, subCodeSequence);
     }
 
     @PutMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse modifyCode(@PathVariable("serviceName") String serviceName,
                                   @PathVariable(name = "tenantId", required = false) String tenantId,
-                                  @PathVariable("codeId") String codeId,
+                                  @WildcardPathVariable String[] fullIdPath,
                                   @RequestBody Code code) {
-        return codeService.modifyCode(serviceName, tenantId, codeId, code);
+        return codeService.modifyCode(serviceName, tenantId, fullIdPath, code);
     }
 
     @DeleteMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse removeCode(@PathVariable("serviceName") String serviceName,
                                   @PathVariable(name = "tenantId", required = false) String tenantId,
-                                  @PathVariable("codeId") String codeId) {
-        return codeService.removeCode(serviceName, tenantId, codeId);
+                                  @WildcardPathVariable String[] fullIdPath) {
+        return codeService.removeCode(serviceName, tenantId, fullIdPath);
     }
 
     @GetMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})
     public ApiResponse getCode(@PathVariable("serviceName") String serviceName,
                                @PathVariable(name = "tenantId", required = false) String tenantId,
-                               @PathVariable("codeId") String codeId) {
-        return codeService.getCode(serviceName, tenantId, codeId);
+                               @WildcardPathVariable String[] fullIdPath) {
+        return codeService.getCode(serviceName, tenantId, fullIdPath);
+    }
+
+    @GetMapping(value = {"/{serviceName}/{tenantId}/using/code/**", "/{serviceName}/{tenantId}/using/code/**"})
+    public ApiResponse getUsingCode(@PathVariable("serviceName") String serviceName,
+                               @PathVariable(name = "tenantId", required = false) String tenantId,
+                               @WildcardPathVariable String[] fullIdPath) {
+        return codeService.getUsingCode(serviceName, tenantId, fullIdPath);
     }
 
     @GetMapping(value = {"/{serviceName}/{tenantId}/code", "/{serviceName}/code"})
     public ApiResponse getTenantCodes(@PathVariable("serviceName") String serviceName,
                                       @PathVariable(name = "tenantId", required = false) String tenantId) {
         return codeService.getTenantCodeList(serviceName, tenantId);
+    }
+
+    @GetMapping(value = {"/{serviceName}/{tenantId}/using/code", "/{serviceName}/using/code"})
+    public ApiResponse getUsingTenantCodes(@PathVariable("serviceName") String serviceName,
+                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
+        return codeService.getUsingTenantCodeList(serviceName, tenantId);
     }
 }

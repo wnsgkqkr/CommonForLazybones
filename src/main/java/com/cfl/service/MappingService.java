@@ -2,6 +2,7 @@ package com.cfl.service;
 
 import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
+import com.cfl.domain.Code;
 import com.cfl.domain.User;
 import com.cfl.mapper.MappingMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,27 @@ public class MappingService {
 
     public List<Authority> getUserAuthorities(User user) {
         return mappingMapper.selectUserAuthorities(user);
+    }
+
+    //TODO 시퀀스로 들어갈때 판별
+    public void createCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence) {
+        mappingMapper.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence);
+    }
+
+    public List<Code> getTopLevelCodes(String serviceName, String tenantId) {
+        return mappingMapper.selectTopLevelCodes(serviceName, tenantId);
+    }
+
+    public List<Code> getUsingTopLevelCodes(String serviceName, String tenantId) {
+        return mappingMapper.selectUsingTopLevelCodes(serviceName, tenantId);
+    }
+
+    public List<Code> getLowLevelCodes(Code highLevelCode) {
+        return mappingMapper.selectLowLevelCodes(highLevelCode);
+    }
+
+    public List<Code> getUsingLowLevelCodes(Code highLevelCode) {
+        return mappingMapper.selectUsingLowLevelCodes(highLevelCode);
     }
 
     public void createObjectSubObjectMapping(String objectId, CflObject object) {

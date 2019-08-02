@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -149,7 +146,7 @@ public class UserService {
 
                 // DB에도 없는 경우
                 if (userFromDB == null) {
-                    apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                    apiResponse = ApiResponseUtil.getSuccessApiResponse(Collections.emptyList());
                 } else {
                     apiResponse = ApiResponseUtil.getSuccessApiResponse(userFromDB.getUserToAuthorities());
                 }

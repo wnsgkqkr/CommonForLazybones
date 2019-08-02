@@ -27,8 +27,8 @@ public class NetworkService {
     @Autowired
     private HistoryService historyService;
 
-    public boolean isAllowedServer(String serviceName, String tenantId, String serverIp) {
-        Server server = new Server(serviceName, tenantId, serverIp);
+    public boolean isAllowedServer(String serviceName, String serverIp) {
+        Server server = new Server(serviceName, serverIp);
 
         Server getServer = serverMapper.selectAllowedServer(server);
         if (getServer != null) {
@@ -36,7 +36,7 @@ public class NetworkService {
         }
 
         //check regular expression
-        List<Server> regExpServerList = serverMapper.selectRegExpServerList(serviceName, server.getTenantId());
+        List<Server> regExpServerList = serverMapper.selectRegExpServerList(serviceName);
         for (Server regExpServer : regExpServerList) {
             String regExp = regExpServer.getServerIp();
 
@@ -50,12 +50,11 @@ public class NetworkService {
     public ApiResponse createNetworkAcl(String serviceName, String tenantId, String serverIp, Server server) {
         try {
             server.setServiceName(serviceName);
-            server.setTenantId(tenantId);
             server.setServerIp(serverIp);
 
             serverMapper.insertAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
+            historyService.createHistory(serviceName, tenantId, server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -65,12 +64,11 @@ public class NetworkService {
     public ApiResponse modifyNetworkAcl(String serviceName, String tenantId, String serverIp, Server server) {
         try {
             server.setServiceName(serviceName);
-            server.setTenantId(tenantId);
             server.setServerIp(serverIp);
 
             serverMapper.updateAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
+            historyService.createHistory(serviceName, tenantId, server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -79,11 +77,11 @@ public class NetworkService {
 
     public ApiResponse deleteNetworkAcl(String serviceName, String tenantId, String serverIp) {
         try {
-            Server server = new Server(serviceName, tenantId, serverIp);
+            Server server = new Server(serviceName, serverIp);
 
             serverMapper.deleteAllowedServer(server);
             ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(server);
-            historyService.createHistory(serviceName, server.getTenantId(), server, successApiResponse);
+            historyService.createHistory(serviceName, tenantId, server, successApiResponse);
             return successApiResponse;
         } catch (Exception e) {
             return ApiResponseUtil.getFailureApiResponse();
@@ -92,7 +90,7 @@ public class NetworkService {
 
     public ApiResponse getNetworkAcl(String serviceName, String tenantId, String serverIp) {
         try {
-            Server server = new Server(serviceName, tenantId, serverIp);
+            Server server = new Server(serviceName, serverIp);
 
             serverMapper.selectAllowedServer(server);
             return ApiResponseUtil.getSuccessApiResponse(server);
@@ -109,7 +107,6 @@ public class NetworkService {
             provideServer.setServerIp(ip.getHostAddress());
             provideServer.setServerName(ip.getHostName());
             provideServer.setServiceName("cfl");
-            provideServer.setTenantId(Constant.DEFAULT_TENANT_ID);
 
             if (serverMapper.selectProvideServerByServerIp(provideServer) == null) {
                 serverMapper.insertProvideServer(provideServer);

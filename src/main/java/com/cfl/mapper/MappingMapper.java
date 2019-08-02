@@ -2,6 +2,7 @@ package com.cfl.mapper;
 
 import com.cfl.domain.Authority;
 import com.cfl.domain.CflObject;
+import com.cfl.domain.Code;
 import com.cfl.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,6 +29,12 @@ public interface MappingMapper {
     List<Authority> selectObjectAuthorities(@Param("object") CflObject object);
     List<User> selectAuthorityUsers(@Param("authority") Authority authority);
     List<Authority> selectUserAuthorities(@Param("user") User user);
+
+    void createCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence);
+    List<Code> selectTopLevelCodes(String serviceName, String tenantId);
+    List<Code> selectUsingTopLevelCodes(String serviceName, String tenantId);
+    List<Code> selectLowLevelCodes(Code highLevelCode);
+    List<Code> selectUsingLowLevelCodes(Code highLevelCode);
 
     boolean isExistObjectSubObjectMapping(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
     void insertObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);

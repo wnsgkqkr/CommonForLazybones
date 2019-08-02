@@ -19,6 +19,18 @@
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
 
+    <resultMap id="Code" type="Code">
+        <id property="codeSequence" column="cd_seq"/>
+        <result property="codeId" column="cd_id" />
+        <result property="codeName" column="cd_nm"/>
+        <result property="codeDescription" column="cd_desc"/>
+        <result property="isUsed" column="use_yn"/>
+        <result property="order" column="ord"/>
+        <result property="multiLanguageCode" column="mlng_cd"/>
+        <result property="tenantId" column="tnnt_id"/>
+        <result property="serviceName" column="svc_nm"/>
+    </resultMap>
+
     <select id="selectObjectIdAndSubObjectIdMapList" resultType="Map">
         SELECT
 	        ob.objt_id AS objectId
@@ -308,6 +320,82 @@
 	        auth.auth_nm
     </select>
 
+    <insert id="createCodeSequenceAndSubCodeSequenceMapping">
+        INSERT INTO
+            cfl_code_subcode_mapping(
+                cd_seq
+                , sub_cd_seq
+            )
+        VALUES
+            (
+                #{codeSequence}
+                , #{subCodeSequence}
+            )
+
+    </insert>
+
+    <select id="selectTopLevelCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code cd
+        WHERE
+            cd.svc_nm = #{serviceName}
+	        AND cd.tnnt_id = #{tenantId}
+            AND NOT EXISTS (
+					SELECT *
+					FROM cfl_code_subcode_mapping scdm
+                    WHERE cd.cd_seq = scdm.sub_cd_seq
+                    )
+    </select>
+
+    <select id="selectUsingTopLevelCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code cd
+        WHERE
+            cd.svc_nm = #{serviceName}
+	        AND cd.tnnt_id = #{tenantId}
+	        AND cd.use_yn = '1'
+            AND NOT EXISTS (
+					SELECT *
+					FROM cfl_code_subcode_mapping scdm
+                    WHERE cd.cd_seq = scdm.sub_cd_seq
+                    )
+    </select>
+
+    <select id="selectLowLevelCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code cd
+            INNER JOIN
+                cfl_code_subcode_mapping scdm
+            ON
+                cd.cd_seq = scdm.sub_cd_seq
+        WHERE
+            cd.svc_nm = #{serviceName}
+	        AND cd.tnnt_id = #{tenantId}
+	        AND scdm.cd_seq = #{codeSequence}
+    </select>
+
+    <select id="selectUsingLowLevelCodes" resultMap="Code">
+        SELECT
+            *
+        FROM
+            cfl_code cd
+            INNER JOIN
+                cfl_code_subcode_mapping scdm
+            ON
+                cd.cd_seq = scdm.sub_cd_seq
+        WHERE
+            cd.svc_nm = #{serviceName}
+            AND cd.use_yn = '1'
+	        AND cd.tnnt_id = #{tenantId}
+	        AND scdm.cd_seq = #{codeSequence}
+    </select>
+
     <select id="isExistObjectSubObjectMapping" resultType="boolean">
         SELECT
 	        if(count(*) > 0, 'true', 'false')
@@ -383,7 +471,7 @@
                 osom.sub_objt_seq = ob.objt_seq
         WHERE
             ob.tnnt_id = #{tenantId}
-            AND svc_nm = #{serviceName};
+            AND svc_nm = #{serviceName}
     </select>
 
     <select id="selectTenantParentObjectIdList" resultType="String">
@@ -396,6 +484,6 @@
                 osom.objt_seq = ob.objt_seq
         WHERE
             ob.tnnt_id = #{tenantId}
-            AND svc_nm = #{serviceName};
+            AND svc_nm = #{serviceName}
     </select>
 </mapper>
