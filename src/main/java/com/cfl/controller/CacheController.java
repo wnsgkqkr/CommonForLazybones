@@ -19,24 +19,29 @@ public class CacheController {
                                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.clearUserTenantCache(serviceName, tenantId);
     }
+
     @RequestMapping(value = "{serviceName}/user/cache")
     public ApiResponse clearServiceUserAuthorityCache(@PathVariable("serviceName") String serviceName) {
         return cacheService.clearUserServiceCache(serviceName);
     }
+
     @RequestMapping(value = "/user/cache")
     public ApiResponse clearUserAuthorityCache() {
         return cacheService.clearUserCache();
     }
+
 
     @RequestMapping(value = "{serviceName}/{tenantId}/authority/cache")
     public ApiResponse clearTenantAuthorityUserCache(@PathVariable("serviceName") String serviceName,
                                                      @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.refreshTenantAuthorityCache(serviceName, tenantId);
     }
+
     @RequestMapping(value = "{serviceName}/authority/cache")
     public ApiResponse clearServiceAuthorityUserCache(@PathVariable("serviceName") String serviceName) {
         return cacheService.refreshServiceAuthorityCache(serviceName);
     }
+
     @RequestMapping(value = "/authority/cache")
     public ApiResponse clearAuthorityUserCache() {
         return cacheService.createAuthorityCache();
@@ -47,10 +52,12 @@ public class CacheController {
                                                 @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.refreshTenantObjectCache(serviceName, tenantId);
     }
+
     @RequestMapping(value = "{serviceName}/object/cache")
     public ApiResponse refreshServiceObjectCache(@PathVariable("serviceName") String serviceName) {
         return cacheService.refreshServiceObjectCache(serviceName);
     }
+
     @RequestMapping(value = "/object/cache")
     public ApiResponse createObjectCache(){
         return cacheService.createObjectCache();
@@ -61,10 +68,12 @@ public class CacheController {
                                                 @PathVariable(name = "tenantId", required = false) String tenantId) {
         return cacheService.refreshTenantCodeCache(serviceName, tenantId);
     }
+
     @RequestMapping(value = "{serviceName}/code/cache")
     public ApiResponse refreshServiceCodeCache(@PathVariable("serviceName") String serviceName) {
         return cacheService.refreshServiceCodeCache(serviceName);
     }
+
     @RequestMapping(value = "/code/cache")
     public ApiResponse refreshCodeCache(){
         return cacheService.createCodeCache();

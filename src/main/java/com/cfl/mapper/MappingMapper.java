@@ -35,4 +35,10 @@ public interface MappingMapper {
     List<Code> selectUsingTopLevelCodes(String serviceName, String tenantId);
     List<Code> selectLowLevelCodes(Code highLevelCode);
     List<Code> selectUsingLowLevelCodes(Code highLevelCode);
+
+    boolean isExistObjectSubObjectMapping(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    void insertObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    void deleteObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
+    List<String> selectTenantSubObjectIdList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
+    List<String> selectTenantParentObjectIdList(@Param("serviceName") String serviceName, @Param("tenantId") String tenantId);
 }

@@ -1,18 +1,15 @@
 package com.cfl.service;
 
 import com.cfl.cache.Cache;
-import com.cfl.customexception.ExistCodeException;
 import com.cfl.domain.ApiResponse;
 import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.Code;
 import com.cfl.mapper.CodeMapper;
-import com.cfl.mapper.MappingMapper;
 import com.cfl.util.ApiResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,102 +42,138 @@ public class CodeService{
         return codeMapper.selectCodeMultiLanguageMapList(serviceName, tenantId);
     }
 
-    public ApiResponse createCode(String serviceName, String tenantId, String[] fullIdPath, Code code) {
-
+    /***
+     * 코드 생성 후 full id path 로 온 경로에 매핑한다.
+     * 코드 연결에 문제가 있는 경우 생성하지 않고 code mapping error를 반환한다.
+     */
+    public ApiResponse createCode(String serviceName, String tenantId, List<String> fullIdPath, Code code) {
         ApiResponse apiResponse;
+
         try {
             code.setServiceName(serviceName);
             code.setTenantId(tenantId);
-            //fullIdPath last element = codeId
-            code.setCodeId(fullIdPath[fullIdPath.length - 1]);
+            // fullIdPath last element = codeId
+            code.setCodeId(fullIdPath.get(fullIdPath.size() - 1));
             code.setMultiLanguageCode(UUID.randomUUID().toString());
 
-            if (isExistCode(serviceName, tenantId, fullIdPath)) {
-                apiResponse = ApiResponseUtil.getFailureApiResponse();
+            if (isExistCode(code, fullIdPath)) {
+                apiResponse = ApiResponseUtil.getDuplicateCreationApiResponse();
             } else {
+                // 최상위 코드일 경우 연결 없이 생성만 한다.
+                if (fullIdPath.size() == 1 && !"".equals(fullIdPath.get(0))) {
+                    codeMapper.insertCode(code);
+                    codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
+                    networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "code"));
+                    apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+                } else {
+                    String highLevelFullDepth = getHighLevelFullDepth(fullIdPath);
+                    long highLevelCodeSequence = getCodeSequenceFromCache(code, highLevelFullDepth);
 
-                codeMapper.insertCode(code);
-                codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
-
-                String fullDepth = getFullDepth(fullIdPath);
-                String highLevelFullDepth = null;
-                if (fullDepth.length() > code.getCodeId().length() + 1) {
-                    highLevelFullDepth = fullDepth.substring(0, fullDepth.length() - (code.getCodeId().length() + 1));
+                    // 코드 연결에 문제가 있는 경우 (상위 코드 시퀀스가 없거나 상위 코드 full depth가 잘못된 경우)
+                    if (highLevelCodeSequence == -1 || "".equals(highLevelFullDepth)) {
+                        apiResponse = ApiResponseUtil.getCodeMappingErrorApiResponse();
+                    } else {
+                        codeMapper.insertCode(code);
+                        codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
+                        mappingService.createCodeSequenceAndSubCodeSequenceMapping(highLevelCodeSequence, code.getCodeSequence());
+                        networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "code"));
+                        apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+                    }
                 }
-                if (highLevelFullDepth != null) {
-                    mappingService.createCodeSequenceAndSubCodeSequenceMapping(Cache.codeCache.get(serviceName).get(tenantId).get(highLevelFullDepth).getCodeSequence(), code.getCodeSequence());
-                }
-
-                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "code"));
-                apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
             }
         } catch (Exception e) {
             log.error("createCode fail", e);
             apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
         historyService.createHistory(serviceName, code.getTenantId(), code, apiResponse);
         return apiResponse;
     }
 
+    // todo 코드 매핑시 문제가 있는 코드 매핑 제외하는 로직 개발 필요
     public ApiResponse createCodeMapping(String serviceName, String tenantId, Long codeSequence, Long subCodeSequence) {
+        ApiResponse apiResponse;
+        Code code = new Code(codeSequence);
+
         try {
             mappingService.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence);
-            Code code = new Code(codeSequence);
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
-            historyService.createHistory(serviceName, tenantId, code, successApiResponse);
-            return successApiResponse;
+            apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+
         } catch (Exception e) {
             log.error("createCodeMapping fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, tenantId, code, apiResponse);
+        return apiResponse;
     }
 
-    public ApiResponse modifyCode(String serviceName, String tenantId, String[] fullIdPath, Code code) {
+    public ApiResponse modifyCode(String serviceName, String tenantId, List<String> fullIdPath, Code code) {
+        ApiResponse apiResponse;
+
         try {
             code.setServiceName(serviceName);
             code.setTenantId(tenantId);
-            code.setCodeSequence(Cache.codeCache.get(serviceName).get(tenantId).get(getFullDepth(fullIdPath)).getCodeSequence());
 
-            // 다국어 정보의 경우 기존 데이터를 지우고 새로 생성한다.
-            codeMapper.updateCode(code);
-            codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
-            codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
+            Code codeFromCache = getCodeFromCache(code, getFullDepth(fullIdPath));
 
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
-            historyService.createHistory(serviceName, code.getTenantId(), code, successApiResponse);
-            return successApiResponse;
+            // 존재하지 않는 코드을 수정하려는 경우
+            if (codeFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+            } else {
+                code.setCodeSequence(codeFromCache.getCodeSequence());
+
+                // 다국어 정보의 경우 기존 데이터를 지우고 새로 생성한다.
+                codeMapper.updateCode(code);
+                codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
+                codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
+
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+            }
         } catch(Exception e) {
             log.error("modifyCode fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, code.getTenantId(), code, apiResponse);
+        return apiResponse;
     }
 
-    public ApiResponse removeCode(String serviceName, String tenantId, String[] fullIdPath) {
+    public ApiResponse removeCode(String serviceName, String tenantId, List<String> fullIdPath) {
+        ApiResponse apiResponse;
+        Code code = new Code(serviceName, tenantId);
+
         try {
-            Code code = new Code(serviceName, tenantId, Cache.codeCache.get(serviceName).get(tenantId).get(getFullDepth(fullIdPath)).getCodeSequence());
-            code = codeMapper.selectCode(code);
+            Code codeFromCache = getCodeFromCache(code, getFullDepth(fullIdPath));
 
-            codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
-            codeMapper.deleteCode(code);
+            // 존재하지 않는 코드을 삭제하려는 경우
+            if (codeFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+            } else {
+                code.setCodeSequence(code.getCodeSequence());
 
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
-            ApiResponse successApiResponse = ApiResponseUtil.getSuccessApiResponse(code);
-            historyService.createHistory(serviceName, code.getTenantId(), code, successApiResponse);
-            return successApiResponse;
+                codeMapper.deleteCodeMultiLanguage(code.getMultiLanguageCode());
+                codeMapper.deleteCode(code);
+
+                networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "code"));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+            }
         } catch (Exception e) {
             log.error("removeCode fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        historyService.createHistory(serviceName, code.getTenantId(), code, apiResponse);
+        return apiResponse;
     }
 
-    public ApiResponse getCode(String serviceName, String tenantId, String[] fullIdPath) {
+    public ApiResponse getCode(String serviceName, String tenantId, List<String> fullIdPath) {
+        ApiResponse apiResponse;
+        Code code = new Code(serviceName, tenantId);
+
         try {
-            String fullDepth = getFullDepth(fullIdPath);
-
-            Code codeFromCache = Cache.codeCache.get(serviceName).get(tenantId).get(fullDepth);
-
-            ApiResponse apiResponse;
+            Code codeFromCache = getCodeFromCache(code, getFullDepth(fullIdPath));
 
             // 캐시에 코드가 없는 경우
             if (codeFromCache == null) {
@@ -148,88 +181,156 @@ public class CodeService{
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(codeFromCache);
             }
-
-            return apiResponse;
         } catch (Exception e) {
             log.error("getCode fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
-    public ApiResponse getUsingCode(String serviceName, String tenantId, String[] fullIdPath) {
+    public ApiResponse getUsingCode(String serviceName, String tenantId, List<String> fullIdPath) {
+        ApiResponse apiResponse;
+        Code code = new Code(serviceName, tenantId);
+
         try {
-            String fullDepth = getFullDepth(fullIdPath);
-
-            Code codeFromCache = Cache.usingCodeCache.get(serviceName).get(tenantId).get(fullDepth);
-
-            ApiResponse apiResponse;
+            Code usingCodeFromCache = getUsingCodeFromCache(code, getFullDepth(fullIdPath));
 
             // 캐시에 코드가 없는 경우
-            if (codeFromCache == null) {
+            if (usingCodeFromCache == null) {
                 apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             } else {
-                apiResponse = ApiResponseUtil.getSuccessApiResponse(codeFromCache);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(usingCodeFromCache);
             }
-
-            return apiResponse;
         } catch (Exception e) {
             log.error("getCode fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
-    public ApiResponse getTenantCodeList(String serviceName, String tenantId) {
-        try {
-            Code code = new Code(serviceName, tenantId);
+    public ApiResponse getTenantCodeMap(String serviceName, String tenantId) {
+        ApiResponse apiResponse;
+        Code code = new Code(serviceName, tenantId);
 
-            Map<String, Code> codeMap = Cache.codeCache.get(code.getServiceName()).get(code.getTenantId());
+        try {
+            Map<String, Code> codeMap = getTenantCodeMapFromCache(code);
+
             if (codeMap != null) {
-                return ApiResponseUtil.getSuccessApiResponse(codeMap);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                return ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
-    public ApiResponse getUsingTenantCodeList(String serviceName, String tenantId) {
-        try {
-            Code code = new Code(serviceName, tenantId);
+    public ApiResponse getUsingTenantCodeMap(String serviceName, String tenantId) {
+        ApiResponse apiResponse;
+        Code code = new Code(serviceName, tenantId);
 
-            Map<String, Code> codeMap = Cache.usingCodeCache.get(code.getServiceName()).get(code.getTenantId());
+        try {
+            Map<String, Code> codeMap = getTenantUsingCodeMapFromCache(code);
+
             if (codeMap != null) {
-                return ApiResponseUtil.getSuccessApiResponse(codeMap);
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                return ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);
-            return ApiResponseUtil.getFailureApiResponse();
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
         }
+
+        return apiResponse;
     }
 
-    private boolean isExistCode(String serviceName, String tenantId, String[] fullIdPath) {
+    private boolean isExistCode(Code code, List<String> fullIdPath) {
         String fullDepth = getFullDepth(fullIdPath);
-        if(Cache.codeCache.get(serviceName).get(tenantId).get(fullDepth) != null) {
+        if (getCodeFromCache(code, fullDepth) != null) {
             return true;
         }
         return false;
     }
 
-    //urlPath = PID/PID/PID/PID/..../ID -> fullIdPath = [{PID},{PID},{PID},....,{ID}]
-    //fullDepth = PID:PID:PID:...:ID
-    private String getFullDepth(String[] fullIdPath) {
-        String fullDepth = "";
-        // parent가 있다면 만들어주는 작업
-        if (fullIdPath.length > 1) {
-            for (String codeId : fullIdPath) {
-                fullDepth += (codeId + ":");
-            }
-        } else if (fullIdPath.length == 1) {
-            fullDepth = fullIdPath[0]+":";
+    // urlPath = PID/PID/PID/PID/..../ID -> fullIdPath = [{PID},{PID},{PID},....,{ID}]
+    // fullDepth = PID:PID:PID:...:ID
+    private String getFullDepth(List<String> fullIdPath) {
+        StringBuilder fullDepth = new StringBuilder();
+
+        for (String codeId : fullIdPath) {
+            fullDepth.append(codeId).append(":");
         }
-        return fullDepth;
+
+        return fullDepth.toString();
+    }
+
+    private String getHighLevelFullDepth(List<String> fullIdPath) {
+        StringBuilder highLevelFullDepth = new StringBuilder();
+
+        int fullIdPathLastIndex = fullIdPath.size() - 1;
+
+        for (String codeId : fullIdPath) {
+            if (fullIdPathLastIndex != fullIdPath.indexOf(codeId)) {
+                highLevelFullDepth.append(codeId).append(":");
+            }
+        }
+
+        return highLevelFullDepth.toString();
+    }
+
+    private Map<String, Code> getTenantCodeMapFromCache(Code code) {
+        // 캐시에서 찾는 맵이 없는 경우 null 반환
+        Map<String, Map<String, Code>> serviceMapFromCache = Cache.codeCache.get(code.getServiceName());
+        if (serviceMapFromCache == null) {
+            return null;
+        }
+
+        return serviceMapFromCache.get(code.getTenantId());
+    }
+
+    private Code getCodeFromCache(Code code, String getFullDepth) {
+        // 캐시에서 찾는 코드가 없는 경우 null 반환
+        Map<String, Code> tenantMapFromCache = getTenantCodeMapFromCache(code);
+        if (tenantMapFromCache == null) {
+            return null;
+        }
+
+        return tenantMapFromCache.get(getFullDepth);
+    }
+
+    private long getCodeSequenceFromCache(Code code, String getFullDepth) {
+        Code codeFromCache = getCodeFromCache(code, getFullDepth);
+        // 캐시에서 찾는 코드 시퀀스가 없는 경우 -1 반환
+        if (codeFromCache == null) {
+            return -1;
+        }
+
+        return codeFromCache.getCodeSequence();
+    }
+
+    private Map<String, Code> getTenantUsingCodeMapFromCache(Code code) {
+        // 캐시에서 찾는 맵이 없는 경우 null 반환
+        Map<String, Map<String, Code>> serviceMapFromCache = Cache.usingCodeCache.get(code.getServiceName());
+        if (serviceMapFromCache == null) {
+            return null;
+        }
+
+        return serviceMapFromCache.get(code.getTenantId());
+    }
+
+    private Code getUsingCodeFromCache(Code code, String getFullDepth) {
+        // 캐시에서 찾는 코드가 없는 경우 null 반환
+        Map<String, Code> tenantMapFromCache = getTenantUsingCodeMapFromCache(code);
+        if (tenantMapFromCache == null) {
+            return null;
+        }
+
+        return tenantMapFromCache.get(getFullDepth);
     }
 }

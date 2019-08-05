@@ -87,4 +87,24 @@ public class MappingService {
     public List<Code> getUsingLowLevelCodes(Code highLevelCode) {
         return mappingMapper.selectUsingLowLevelCodes(highLevelCode);
     }
+
+    public void createObjectSubObjectMapping(String objectId, CflObject object) {
+        mappingMapper.insertObjectSubObject(objectId, object);
+    }
+
+    public void removeObjectSubObjectMapping(String objectId, CflObject object) {
+        mappingMapper.deleteObjectSubObject(objectId, object);
+    }
+
+    public boolean isExistObjectSubObjectMapping(String objectId, CflObject object) {
+        return mappingMapper.isExistObjectSubObjectMapping(objectId, object);
+    }
+
+    public List<String> getTenantSubObjectIdList(String serviceName, String tenantId) {
+        return mappingMapper.selectTenantSubObjectIdList(serviceName, tenantId);
+    }
+
+    public List<String> getTenantParentObjectIdList(String serviceName, String tenantId) {
+        return mappingMapper.selectTenantParentObjectIdList(serviceName, tenantId);
+    }
 }

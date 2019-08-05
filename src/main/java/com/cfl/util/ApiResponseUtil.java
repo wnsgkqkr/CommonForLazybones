@@ -12,6 +12,7 @@ public class ApiResponseUtil {
     private static final int CODE_DUPLICATE_CREATE = 101;
     private static final int CODE_MISSING_VALUE = 102;
     private static final int CODE_SUB_OBJECT_MAPPING_ERROR = 103;
+    private static final int CODE_CODE_MAPPING_ERROR = 104;
 
     private static final String MESSAGE_SUCCESS = "SUCCESS";
     private static final String MESSAGE_DUPLICATE_MAPPING = "DUPLICATE_MAPPING";
@@ -19,6 +20,7 @@ public class ApiResponseUtil {
     private static final String MESSAGE_DUPLICATE_CREATION = "DUPLICATE_CREATION";
     private static final String MESSAGE_MISSING_VALUE = "MISSING_VALUE";
     private static final String MESSAGE_SUB_OBJECT_MAPPING_ERROR = "SUB_OBJECT_MAPPING_ERROR";
+    private static final String MESSAGE_CODE_MAPPING_ERROR = "CODE_MAPPING_ERROR";
 
     public static ApiResponse getSuccessApiResponse(Object result) {
         return new ApiResponse(true, CODE_SUCCESS, MESSAGE_SUCCESS, result);
@@ -42,5 +44,9 @@ public class ApiResponseUtil {
 
     public static ApiResponse getSubObjectMappingErrorApiResponse() {
         return new ApiResponse(false, CODE_SUB_OBJECT_MAPPING_ERROR, MESSAGE_SUB_OBJECT_MAPPING_ERROR);
+    }
+
+    public static ApiResponse getCodeMappingErrorApiResponse() {
+        return new ApiResponse(false, CODE_CODE_MAPPING_ERROR, MESSAGE_CODE_MAPPING_ERROR);
     }
 }

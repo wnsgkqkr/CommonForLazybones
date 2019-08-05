@@ -138,32 +138,47 @@ public class ObjectService {
         return apiResponse;
     }
 
+    /***
+     * 오브젝트와 권한 리스트를 매핑하는 메서드
+     * 존재하지 않는 오브젝트나 권한을 요청으로 주는 경우 Missing value 결과를 반환한다.
+     * 이미 존재하는 오브젝트-권한 매핑을 요청하는 경우 중복리스트에 넣어 Duplicate mapping 결과에 넣어 반환한다.
+     * (나머지 존재하지 않던 오브젝트-권한 매핑은 정상적으로 매핑한다.)
+     */
     public ApiResponse createObjectAuthoritiesMapping(String serviceName, String tenantId, String objectId, List<Authority> requestAuthorities) {
         ApiResponse apiResponse;
         CflObject object = new CflObject(serviceName, tenantId, objectId);
 
         try {
-            List<Authority> duplicatedAuthorityList = new ArrayList<>();
+            CflObject objectFromCache = getObjectFromCache(object);
 
-            for (Authority requestAuthority : requestAuthorities) {
-                requestAuthority.setServiceName(serviceName);
-                requestAuthority.setTenantId(object.getTenantId());
-                requestAuthority = authorityService.checkExistAuthorityAndCreateAuthority(requestAuthority);
-
-                // 이미 매핑이 되어있는 경우 중복권한리스트에 추가한다.
-                if (mappingService.isExistObjectAuthorityMapping(objectId, requestAuthority)) {
-                    duplicatedAuthorityList.add(requestAuthority);
-                } else {
-                    mappingService.createObjectAuthorityMappting(objectId, requestAuthority);
-                }
-            }
-
-            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
-
-            if (duplicatedAuthorityList.size() == 0) {
-                apiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
+            // 오브젝트가 없는 경우
+            if (objectFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             } else {
-                apiResponse = ApiResponseUtil.getDuplicateMappingApiResponse(duplicatedAuthorityList);
+                // 존재하지 않는 권한이 있는 경우
+                if (hasNonExistentAuithority(object, requestAuthorities)) {
+                    apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                } else {
+                    List<Authority> duplicatedAuthorityList = new ArrayList<>();
+
+                    for (Authority requestAuthority : requestAuthorities) {
+                        // 이미 매핑이 되어있는 경우 중복권한리스트에 추가한다.
+                        if (mappingService.isExistObjectAuthorityMapping(objectId, requestAuthority)) {
+                            duplicatedAuthorityList.add(requestAuthority);
+                        } else {
+                            mappingService.createObjectAuthorityMappting(objectId, requestAuthority);
+                        }
+                    }
+
+                    networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "object"));
+
+                    // 중복된 매핑이 있는 경우 Duplicate mapping이 없는 경우 Success로 결과를 세팅한다.
+                    if (duplicatedAuthorityList.size() == 0) {
+                        apiResponse = ApiResponseUtil.getSuccessApiResponse(requestAuthorities);
+                    } else {
+                        apiResponse = ApiResponseUtil.getDuplicateMappingApiResponse(duplicatedAuthorityList);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("createObjectAuthoritiesMapping fail", e);
@@ -172,6 +187,24 @@ public class ObjectService {
 
         historyService.createHistory(serviceName, object.getTenantId(), requestAuthorities, apiResponse);
         return apiResponse;
+    }
+
+    private boolean hasNonExistentAuithority(CflObject object, List<Authority> requestAuthorities) {
+        boolean hasNonExistentAuithority = false;
+
+        // 존재하지 않는 권한이 있는지 확인
+        for (Authority requestAuthority : requestAuthorities) {
+            requestAuthority.setServiceName(object.getServiceName());
+            requestAuthority.setTenantId(object.getTenantId());
+            requestAuthority = authorityService.getAuthorityFromCache(requestAuthority);
+
+            if (requestAuthority == null) {
+                hasNonExistentAuithority = true;
+                break;
+            }
+        }
+
+        return hasNonExistentAuithority;
     }
 
     public ApiResponse removeObjectAuthoritiesMapping(String serviceName, String tenantId, String objectId, List<Authority> requestAuthorities) {
@@ -203,7 +236,7 @@ public class ObjectService {
         try {
             List<Authority> authorityList = getObjectToAuthoritiesFromCache(object);
 
-            // 캐시에 오브젝트의 권한리스트가 없는 경우
+            // 캐시에 오브젝트에 권한리스트가 없는 경우
             if (authorityList == null) {
                 apiResponse = ApiResponseUtil.getMissingValueApiResponse();
             } else {
@@ -265,5 +298,135 @@ public class ObjectService {
         }
 
         return objectFromCache.getAuthorities();
+    }
+
+    /***
+     * 오브젝트와 권한 리스트를 매핑하는 메서드
+     * 존재하지 않는 오브젝트나 서브 오브젝트를 요청으로 주는 경우 Missing value 결과를 반환한다.
+     * 연결하면 안되는 오브젝트-서브 오브젝트가 존재시 Sub Object Mapping Error 결과를 반환한다.
+     * 이미 존재하는 오브젝트-서브 오브젝트 매핑을 요청하는 경우 중복리스트에 넣어 Duplicate mapping 결과에 넣어 반환한다.
+     * (나머지 존재하지 않던 오브젝트-서브 오브젝트 매핑은 정상적으로 매핑한다.)
+     */
+    public ApiResponse createObjectSubObjectsMapping(String serviceName, String tenantId, String objectId, List<CflObject> requestSubObjects) {
+        ApiResponse apiResponse;
+        CflObject object = new CflObject(serviceName, tenantId, objectId);
+
+        try {
+            CflObject objectFromCache = getObjectFromCache(object);
+
+            // 오브젝트가 없는 경우
+            if (objectFromCache == null) {
+                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+            } else {
+                // 요청된 서브 오브젝트 중 존재하지 않는 오브젝트가 있는 경우
+                if (hasNonExistentObject(object, requestSubObjects)) {
+                    apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                } else {
+                    // 연결하면 안되는 오브젝트가 존재하는 경우
+                    if (hasSubObjectMappingError(object, requestSubObjects)) {
+                        apiResponse = ApiResponseUtil.getSubObjectMappingErrorApiResponse();
+                    } else {
+                        List<CflObject> duplicatedObjectList = new ArrayList<>();
+
+                        for (CflObject requestSubObject : requestSubObjects) {
+                            // 이미 매핑이 되어있는 경우 중복서브오브젝트리스트에 추가한다.
+                            if (mappingService.isExistObjectSubObjectMapping(objectId, requestSubObject)) {
+                                duplicatedObjectList.add(requestSubObject);
+                            } else {
+                                mappingService.createObjectSubObjectMapping(objectId, requestSubObject);
+                            }
+                        }
+
+                        networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "object"));
+
+                        // 중복된 매핑이 있는 경우 Duplicate mapping이 없는 경우 Success로 결과를 세팅한다.
+                        if (duplicatedObjectList.size() == 0) {
+                            apiResponse = ApiResponseUtil.getSuccessApiResponse(requestSubObjects);
+                        } else {
+                            apiResponse = ApiResponseUtil.getDuplicateMappingApiResponse(duplicatedObjectList);
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("createObjectSubObjectsMapping fail", e);
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
+        }
+
+        historyService.createHistory(serviceName, object.getTenantId(), requestSubObjects, apiResponse);
+        return apiResponse;
+    }
+
+    private boolean hasNonExistentObject(CflObject object, List<CflObject> requestSubObjects) {
+        boolean hasNonExistentObject = false;
+
+        // 서브 오브젝트 요청온 것 중 존재하지 않는 오브젝트는 없는지 확인
+        for (CflObject requestSubObject : requestSubObjects) {
+            requestSubObject.setServiceName(object.getServiceName());
+            requestSubObject.setTenantId(object.getTenantId());
+            requestSubObject = getObjectFromCache(requestSubObject);
+
+            if (requestSubObject == null) {
+                hasNonExistentObject = true;
+                break;
+            }
+        }
+
+        return hasNonExistentObject;
+    }
+
+    /***
+     * 오브젝트-서브 오브젝트를 연결하면 안 되는 매핑이 있는지 확인하는 메서드
+     * 오브젝트는 2계층(오브젝트-서브 오브젝트)으로 구성되도록 설정한다. (2계층을 넘어가게 하는 매핑이 요청 온 경우 에러를 반환하도록 한다.)
+     * 부모 오브젝트로 요청 온 오브젝트가 다른 곳에서 서브 오브젝트로 사용되었다면 true 반환
+     * 브 오브젝트로 요청 온 오브젝트가 다른 곳에서 부모 오브젝트로 사용되었다면 true 반환
+     */
+    private boolean hasSubObjectMappingError(CflObject object, List<CflObject> requestSubObjects) {
+        boolean hasSubObjectMappingError = false;
+
+        // 요청된 부모 오브젝트가 자식으로 사용된 게 있는지 확인 (2계층 구조 이므로)
+        List<String> tenantSubObjectIdList = mappingService.getTenantSubObjectIdList(object.getServiceName(), object.getTenantId());
+        for (String subObjectId : tenantSubObjectIdList) {
+            if (object.getObjectId().equals(subObjectId)) {
+                hasSubObjectMappingError = true;
+                break;
+            }
+        }
+
+        // 요청된 자식 오브젝트들이 부모로 사용된 게 있는지 확인 (2계층 구조 이므로)
+        List<String> tenantParentObjectIdList = mappingService.getTenantParentObjectIdList(object.getServiceName(), object.getTenantId());
+        for (CflObject requestSubObject : requestSubObjects) {
+            for(String parentObjectId : tenantParentObjectIdList) {
+                if (requestSubObject.getObjectId().equals(parentObjectId)) {
+                    hasSubObjectMappingError = true;
+                    break;
+                }
+            }
+        }
+
+        return hasSubObjectMappingError;
+    }
+
+    public ApiResponse removeObjectSubObjectsMapping(String serviceName, String tenantId, String objectId, List<CflObject> requestSubObjects) {
+        ApiResponse apiResponse;
+        CflObject object = new CflObject(serviceName, tenantId, objectId);
+
+        try {
+            for (CflObject requestSubObject : requestSubObjects) {
+                requestSubObject.setServiceName(serviceName);
+                requestSubObject.setTenantId(object.getTenantId());
+                mappingService.removeObjectSubObjectMapping(objectId, requestSubObject);
+            }
+
+            networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId , "object"));
+            apiResponse = ApiResponseUtil.getSuccessApiResponse(requestSubObjects);
+        } catch (Exception e) {
+            log.error("removeObjectSubObjectsMapping fail", e);
+            apiResponse = ApiResponseUtil.getFailureApiResponse();
+        }
+
+        historyService.createHistory(serviceName, object.getTenantId(), requestSubObjects, apiResponse);
+        return apiResponse;
     }
 }

@@ -2,7 +2,6 @@ package com.cfl.service;
 
 import com.cfl.cache.Cache;
 import com.cfl.domain.*;
-import com.cfl.mapper.CodeMapper;
 import com.cfl.util.ApiResponseUtil;
 import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,7 @@ public class CacheService {
     @Autowired
     private CodeService codeService;
 
-    //cfl 서비스의 캐시 갱신
+    // cfl 서비스의 캐시 갱신
     public ApiResponse cacheInit(CacheUpdateRequest cacheUpdateRequest) {
         try {
             String tenantId = cacheUpdateRequest.getTenantId();
@@ -32,23 +31,26 @@ public class CacheService {
             if (tenantId == null) {
                 tenantId = Constant.DEFAULT_TENANT_ID;
             }
-            if (cacheUpdateRequest.getCacheType().equals("object")) {
+
+            if ("object".equals(cacheUpdateRequest.getCacheType())) {
                 refreshTenantObjectCache(serviceName, tenantId);
-            } else if (cacheUpdateRequest.getCacheType().equals("authority")) {
+            } else if ("authority".equals(cacheUpdateRequest.getCacheType())) {
                 refreshTenantAuthorityCache(serviceName, tenantId);
-            } else if (cacheUpdateRequest.getCacheType().equals("code")) {
+            } else if ("code".equals(cacheUpdateRequest.getCacheType())) {
                 refreshTenantCodeCache(serviceName, tenantId);
-            } else if (cacheUpdateRequest.getCacheType().equals("user")) {
+            } else if ("user".equals(cacheUpdateRequest.getCacheType())) {
                 clearUserTenantCache(serviceName, tenantId);
-            } else if (cacheUpdateRequest.getCacheType().equals("all")) {
+            } else if ("all".equals(cacheUpdateRequest.getCacheType())) {
                 refreshTenantObjectCache(serviceName, tenantId);
                 refreshTenantAuthorityCache(serviceName, tenantId);
                 refreshTenantCodeCache(serviceName, tenantId);
                 clearUserTenantCache(serviceName, tenantId);
+            } else {
+                throw new Exception("Invalid parameter in cacheInit.");
             }
             return ApiResponseUtil.getSuccessApiResponse(cacheUpdateRequest);
         } catch (Exception e) {
-            log.error("allCacheInit fail", e);
+            log.error("cacheInit fail", e);
             return ApiResponseUtil.getFailureApiResponse();
         }
     }
@@ -57,11 +59,11 @@ public class CacheService {
     public ApiResponse createObjectCache() {
         try {
             List<CflObject> objectList = objectService.getAllObjects();
-            Map<String, Map<String, Map<String, CflObject>>> temporaryObjectCache = getObjectMap(objectList);
+            Map<String, Map<String, Map<String, CflObject>>> objectMap = getObjectMap(objectList);
+            Map<String, Map<String, Map<String, CflObject>>> toBeChangedObjectCache = addSubObjectsAndAuthorities(objectMap);
             synchronized (Cache.objectAuthorityCache) {
-                Cache.objectAuthorityCache = addSubObjectsAndAuthorities(temporaryObjectCache);
+                Cache.objectAuthorityCache = toBeChangedObjectCache;
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다. -> 캐시에서 안하고 각 서비스에서 쏘는걸로(덕선사원님 확인후 삭제 부탁드립니다!)
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("createObjectCache fail", e);
@@ -209,7 +211,6 @@ public class CacheService {
                 cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
             }
 
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("refreshTenantObjectCache fail", e);
@@ -229,7 +230,6 @@ public class CacheService {
                 Cache.objectAuthorityCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
             }
 
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.objectAuthorityCache);
         } catch (Exception e) {
             log.error("refreshServiceObjectCache fail", e);
@@ -241,9 +241,11 @@ public class CacheService {
     public ApiResponse createAuthorityCache() {
         try {
             List<Authority> authorityList = authorityService.getAllAuthorities();
-            Map<String, Map<String, Map<String, Authority>>> temporaryAuthorityCache = getAuthorityMap(authorityList);
-            Cache.authorityUserCache = addUsers(temporaryAuthorityCache);
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
+            Map<String, Map<String, Map<String, Authority>>> authorityMap = getAuthorityMap(authorityList);
+            Map<String, Map<String, Map<String, Authority>>> toBeChangedAuthorityCache = addUsers(authorityMap);
+            synchronized (Cache.authorityUserCache) {
+                Cache.authorityUserCache = toBeChangedAuthorityCache;
+            }
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("createAuthorityCache fail", e);
@@ -361,7 +363,6 @@ public class CacheService {
                 cacheServiceMap.put(tenantId, toBeChangedTenantMap.get(serviceName).get(tenantId));
             }
 
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("refreshTenantAuthorityCache fail", e);
@@ -381,7 +382,6 @@ public class CacheService {
                 Cache.authorityUserCache.put(serviceName, toBeChangedServiceMap.get(serviceName));
             }
 
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.authorityUserCache);
         } catch (Exception e) {
             log.error("refreshServiceAuthorityCache fail", e);
@@ -394,7 +394,6 @@ public class CacheService {
             synchronized (Cache.userAuthorityCache) {
                 Cache.userAuthorityCache.clear();
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.userAuthorityCache);
         } catch (Exception e) {
             log.error("clearUserCache fail", e);
@@ -409,7 +408,6 @@ public class CacheService {
                     Cache.userAuthorityCache.get(serviceName).clear();
                 }
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.userAuthorityCache);
         } catch (Exception e) {
             log.error("clearUserServiceCache fail", e);
@@ -429,7 +427,6 @@ public class CacheService {
                     }
                 }
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(new Object());
         } catch (Exception e) {
             log.error("clearUserTenantCache fail", e);
@@ -442,15 +439,17 @@ public class CacheService {
     public ApiResponse createCodeCache() {
         try {
             List<Code> codeList = codeService.getAllCodes();
-            Map<String, Map<String, Map<String, Code>>> temporaryCodeCache = getCodeMap(codeList);
-            Map<String, Map<String, Map<String, Code>>> temporaryUsingCodeCache = getCodeMap(codeList);
+            Map<String, Map<String, Map<String, Code>>> codeMap = getCodeMap(codeList);
+            Map<String, Map<String, Map<String, Code>>> toBeChangedCodeCache = setCodeMap(codeMap);
             synchronized (Cache.codeCache) {
-                Cache.codeCache = setCodeMap(temporaryCodeCache);
+                Cache.codeCache = toBeChangedCodeCache;
             }
+
+            Map<String, Map<String, Map<String, Code>>> usingCodeMap = getCodeMap(codeList);
+            Map<String, Map<String, Map<String, Code>>> toBeChangedUsingCodeCache = setUsingCodeMap(usingCodeMap);
             synchronized (Cache.usingCodeCache) {
-                Cache.usingCodeCache = setUsingCodeMap(temporaryUsingCodeCache);
+                Cache.usingCodeCache = toBeChangedUsingCodeCache;
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("createCodeCache fail", e);
@@ -477,8 +476,6 @@ public class CacheService {
             if (tenantIdMap == null) {
                 tenantIdMap = new HashMap<>();
                 serviceNameMap.put(tenantId, tenantIdMap);
-            } else {
-                continue;
             }
         }
 
@@ -508,7 +505,7 @@ public class CacheService {
                         // 코드 정보 및 권한 매핑 정보 세팅
                         List<Map<String, String>> codeMultiLanguageMapList = codeService.getCodeMultiLanguageMapList(serviceName, tenantId);
 
-                        //최상위 코드들을 가져온다(매핑테이블엔 없고 코드테이블엔 있는 코드들)
+                        // 최상위 코드들을 가져온다(매핑테이블엔 없고 코드테이블엔 있는 코드들)
                         List<Code> topLevelCodes = mappingService.getTopLevelCodes(serviceName, tenantId);
 
                         codeIdMap = createCodeMap(codeIdMap, topLevelCodes, "", ":", codeMultiLanguageMapList);
@@ -521,7 +518,7 @@ public class CacheService {
         return codeMap;
     }
 
-    //setCodeMap()과 동일 사용중인 코드만 가져오는
+    // setCodeMap()과 동일 사용중인 코드만 가져오는
     private Map<String, Map<String, Map<String, Code>>> setUsingCodeMap(Map<String, Map<String, Map<String, Code>>> codeMap) {
 
         Set<String> serviceNameKeySet = codeMap.keySet();
@@ -552,10 +549,10 @@ public class CacheService {
         return codeMap;
     }
 
-    //fullDepth = PID:PID:PID:PID:....:ID , fullSequence = :PSEQ:PSEQ:PSEQ:....:SEQ -> 순환이 안생기게 시퀀스로 :로 나눠서 판별(무한루프)
-    //자기 자신에 해당하는 ID만들고 자식 있을시 매핑테이블에서 찾아서 자신 + 된 문자열 넘겨줘서 풀시퀀스 풀뎁스 완성
+    // fullDepth = PID:PID:PID:PID:....:ID , fullSequence = :PSEQ:PSEQ:PSEQ:....:SEQ -> 순환이 안생기게 시퀀스로 :로 나눠서 판별(무한루프)
+    // 자기 자신에 해당하는 ID만들고 자식 있을시 매핑테이블에서 찾아서 자신 + 된 문자열 넘겨줘서 풀시퀀스 풀뎁스 완성
     private Map<String, Code> createCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList) {
-        for(Code highLevelCode : highLevelCodes) {
+        for (Code highLevelCode : highLevelCodes) {
             String nextFullDepth = fullDepth + highLevelCode.getCodeId() + ":";
             String nextFullSequence = fullSequence + highLevelCode.getCodeSequence() + ":";
             List<Code> lowLevelCodes = mappingService.getLowLevelCodes(highLevelCode);
@@ -567,21 +564,21 @@ public class CacheService {
         return codeMap;
     }
 
-    //createCodeMap과 동일 사용중인애들만 저장
+    // createCodeMap과 동일 사용중인애들만 저장
     private Map<String, Code> createUsingCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList) {
-        for(Code highLevelCode : highLevelCodes) {
+        for (Code highLevelCode : highLevelCodes) {
             String nextFullDepth = fullDepth + highLevelCode.getCodeId() + ":";
             String nextFullSequence = fullSequence + highLevelCode.getCodeSequence() + ":";
             List<Code> lowLevelCodes = mappingService.getUsingLowLevelCodes(highLevelCode);
 
             codeMap = putCodeMap(codeMap, highLevelCode, lowLevelCodes, codeMultiLanguageMapList, nextFullDepth, nextFullSequence);
 
-            createCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList);
+            createUsingCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList);
         }
         return codeMap;
     }
 
-    //코드 오브젝트에 서브코드들, 다국어맵, 풀시퀀스 세팅해주고 캐시가 될 맵에 넣어준다.
+    // 코드 오브젝트에 서브코드들, 다국어맵, 풀시퀀스 세팅해주고 캐시가 될 맵에 넣어준다.
     private Map<String, Code> putCodeMap(Map<String, Code> codeMap, Code code, List<Code> subCodes, List<Map<String, String>> codeMultiLanguageMapList, String fullDepth, String fullSequence) {
 
         Map<String, Code> subCodeMap = new HashMap<>();
@@ -636,7 +633,6 @@ public class CacheService {
                 cacheServiceUsingMap.put(tenantId, toBeChangedTenantUsingMap.get(serviceName).get(tenantId));
             }
 
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("refreshTenantCodeCache fail", e);
@@ -662,7 +658,6 @@ public class CacheService {
                 Cache.usingCodeCache.remove(serviceName);
                 Cache.usingCodeCache.put(serviceName, toBeChangedServiceUsingMap.get(serviceName));
             }
-            // todo NeedReset : 서버가 2대 이상일 경우 캐시 갱신이 필요합니다.
             return ApiResponseUtil.getSuccessApiResponse(Cache.codeCache);
         } catch (Exception e) {
             log.error("refreshServiceCodeCache fail", e);

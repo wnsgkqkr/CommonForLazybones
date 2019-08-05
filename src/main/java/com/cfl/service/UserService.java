@@ -144,7 +144,7 @@ public class UserService {
             } else {
                 User userFromDB = getUserFromDBAndSaveCache(user);
 
-                // DB에도 없는 경우
+                // DB에도 없는 경우 권한이 없는걸로 판단하여 빈 리스트를 반환
                 if (userFromDB == null) {
                     apiResponse = ApiResponseUtil.getSuccessApiResponse(Collections.emptyList());
                 } else {
