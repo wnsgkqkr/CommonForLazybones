@@ -3,12 +3,14 @@ package com.cfl.config;
 import com.cfl.util.WildcardPathVariable;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerMapping;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +38,6 @@ public class WildcardPathVariableHandlerMethodArgumentResolver implements Handle
 
         String[] splitPaths = wildcardPath.split(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
 
-        return splitPaths;
+        return new ArrayList<>(Arrays.asList(splitPaths));
     }
 }

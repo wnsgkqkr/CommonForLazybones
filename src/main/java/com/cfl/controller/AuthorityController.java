@@ -34,6 +34,7 @@ public class AuthorityController {
                                            @RequestBody List<User> requestUsers) {
             return authorityService.removeAuthorityUsersMapping(serviceName, tenantId, authorityId, requestUsers);
     }
+
     @GetMapping(value = {AUTHORITY_MAPPING_USERS_URL_WITH_TENANT, AUTHORITY_MAPPING_USERS_URL_WITHOUT_TENANT})
     public ApiResponse getAuthorityUsersMapping(@PathVariable("serviceName") String serviceName,
                                          @PathVariable(name = "tenantId", required = false) String tenantId,
@@ -48,6 +49,7 @@ public class AuthorityController {
                                        @RequestBody Authority authority) {
             return authorityService.createAuthority(serviceName, tenantId, authorityId, authority);
     }
+
     @PutMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
     public ApiResponse modifyAuthority(@PathVariable("serviceName") String serviceName,
                                        @PathVariable(name = "tenantId", required = false) String tenantId,
@@ -55,18 +57,21 @@ public class AuthorityController {
                                        @RequestBody Authority authority) {
             return authorityService.modifyAuthority(serviceName, tenantId, authorityId, authority);
     }
+
     @DeleteMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
     public ApiResponse removeAuthority(@PathVariable("serviceName") String serviceName,
                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                        @PathVariable("authorityId") String authorityId) {
             return authorityService.removeAuthority(serviceName, tenantId, authorityId);
     }
+
     @GetMapping(value = {AUTHORITY_URL_WITH_TENANT, AUTHORITY_URL_WITHOUT_TENANT})
     public ApiResponse getAuthority(@PathVariable("serviceName") String serviceName,
                                     @PathVariable(name = "tenantId", required = false) String tenantId,
                                     @PathVariable("authorityId") String authorityId) {
             return authorityService.getAuthority(serviceName, tenantId, authorityId);
     }
+
     @GetMapping(value = {"/{serviceName}/{tenantId}/authority", "/{serviceName}/authority"})
     public ApiResponse getTenantAuthorities(@PathVariable("serviceName") String serviceName,
                                             @PathVariable(name = "tenantId", required = false) String tenantId) {

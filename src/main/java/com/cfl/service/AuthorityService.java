@@ -244,16 +244,6 @@ public class AuthorityService{
         return apiResponse;
     }
 
-    public Authority checkExistAuthorityAndCreateAuthority(Authority authorityWhoNeedConfirmation) {
-        Authority selectedAuthority = authorityMapper.selectAuthority(authorityWhoNeedConfirmation);
-        if (selectedAuthority != null) {
-            return selectedAuthority;
-        } else {
-            authorityMapper.insertAuthority(authorityWhoNeedConfirmation);
-            return authorityWhoNeedConfirmation;
-        }
-    }
-
     private Map<String, Authority> getTenantAuthorityMapFromCache(Authority authority) {
         // 캐시에서 찾는 맵이 없는 경우 null 반환
         Map<String, Map<String, Authority>> serviceMapFromCache = Cache.authorityUserCache.get(authority.getServiceName());
