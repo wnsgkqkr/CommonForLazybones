@@ -380,12 +380,13 @@ public class ObjectService {
      * 오브젝트-서브 오브젝트를 연결하면 안 되는 매핑이 있는지 확인하는 메서드
      * 오브젝트는 2계층(오브젝트-서브 오브젝트)으로 구성되도록 설정한다. (2계층을 넘어가게 하는 매핑이 요청 온 경우 에러를 반환하도록 한다.)
      * 부모 오브젝트로 요청 온 오브젝트가 다른 곳에서 서브 오브젝트로 사용되었다면 true 반환
-     * 브 오브젝트로 요청 온 오브젝트가 다른 곳에서 부모 오브젝트로 사용되었다면 true 반환
+     * 서브 오브젝트로 요청 온 오브젝트가 다른 곳에서 부모 오브젝트로 사용되었다면 true 반환
+     * 부모 오브젝트로 요청 온 오브젝트와 서브 오브젝트로 요청 온 오브젝트가 같은 경우 true 반환
      */
     private boolean hasSubObjectMappingError(CflObject object, List<CflObject> requestSubObjects) {
         boolean hasSubObjectMappingError = false;
 
-        // 요청된 부모 오브젝트가 자식으로 사용된 게 있는지 확인 (2계층 구조 이므로)
+        // 요청된 부모 오브젝트가 서브로 사용된 게 있는지 확인 (2계층 구조 이므로)
         List<String> tenantSubObjectIdList = mappingService.getTenantSubObjectIdList(object.getServiceName(), object.getTenantId());
         for (String subObjectId : tenantSubObjectIdList) {
             if (object.getObjectId().equals(subObjectId)) {
@@ -394,7 +395,7 @@ public class ObjectService {
             }
         }
 
-        // 요청된 자식 오브젝트들이 부모로 사용된 게 있는지 확인 (2계층 구조 이므로)
+        // 요청된 서브 오브젝트들이 부모로 사용된 게 있는지 확인 (2계층 구조 이므로)
         List<String> tenantParentObjectIdList = mappingService.getTenantParentObjectIdList(object.getServiceName(), object.getTenantId());
         for (CflObject requestSubObject : requestSubObjects) {
             for(String parentObjectId : tenantParentObjectIdList) {
@@ -403,6 +404,14 @@ public class ObjectService {
                     break;
                 }
             }
+        }
+
+        // 요청된 부모 오브젝트와 서브 오브젝트가 같은 경우가 있는지 확인
+        for (CflObject requestSubObject : requestSubObjects) {
+           if (requestSubObject.getObjectId().equals(object.getObjectId())) {
+               hasSubObjectMappingError = true;
+               break;
+           }
         }
 
         return hasSubObjectMappingError;
