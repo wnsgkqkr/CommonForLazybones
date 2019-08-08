@@ -46,8 +46,8 @@ public class NetworkAclController {
     }
 
     @RequestMapping(value = "/{serviceName}/server/cache/init")
-    public void sendCacheInit(@PathVariable("serviceName")String serviceName,
+    public ApiResponse sendCacheInit(@PathVariable("serviceName")String serviceName,
                               @RequestBody CacheUpdateRequest cacheUpdateRequest) {
-        networkService.sendProvideServersToInit(serviceName, cacheUpdateRequest);
+        return networkService.sendProvideServersToInit(serviceName, cacheUpdateRequest);
     }
 }
