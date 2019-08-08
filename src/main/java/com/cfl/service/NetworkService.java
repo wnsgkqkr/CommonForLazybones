@@ -5,15 +5,11 @@ import com.cfl.domain.Server;
 import com.cfl.domain.ApiResponse;
 import com.cfl.mapper.ServerMapper;
 import com.cfl.util.ApiResponseUtil;
-import com.cfl.util.Constant;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.AsyncRestTemplate;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
@@ -117,19 +113,29 @@ public class NetworkService {
         }
     }
 
-    //해당 서비스들의 캐시를 업데이트하기위해 리퀘스트 온대로 해당 서비스를 제공하는 서버들에게 비동기적으로 api전송 (cfl도 이방식으로 캐시 갱신)
-    public void sendProvideServersToInit(String serviceName, CacheUpdateRequest cacheUpdateRequest) {
+    // 해당 서비스들의 캐시를 업데이트하기위해 리퀘스트 온대로 해당 서비스를 제공하는 서버들에게 비동기적으로 api전송 (cfl도 이방식으로 캐시 갱신)
+    public ApiResponse sendProvideServersToInit(String serviceName, CacheUpdateRequest cacheUpdateRequest) {
         List<Server> provideServerList = serverMapper.selectProvideServerByServiceName(serviceName);
 
-        AsyncRestTemplate asyncRestTemplate = new AsyncRestTemplate();
-        asyncRestTemplate.getMessageConverters().add(new StringHttpMessageConverter());
         for (Server provideServer : provideServerList) {
-            String url = "http://"+provideServer.getServerIp()+":"+provideServer.getPortNumber()+"/"+provideServer.getServiceName()+"/cache/init";
-            try {
-                asyncRestTemplate.postForEntity(url, new HttpEntity<>(cacheUpdateRequest), String.class);
-            } catch (Exception e) {
-                continue;
-            }
+            String url = "http://" + provideServer.getServerIp() + ":" + provideServer.getPortNumber() + "/" + provideServer.getServiceName() + "/cache/init";
+
+            WebClient.create(url)
+                    .post()
+                    .body(BodyInserters.fromObject(cacheUpdateRequest))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .subscribe(result -> {
+                            // 통신 성공시 로그 생성
+                            log.info(url + " 캐시 갱신 결과 : " + result);
+                        }
+                        , error -> {
+                            // 통신 실패시 에러 로그 생성
+                            log.error(url + " 캐시 갱신 결과 : " + error.getMessage());
+                        }
+                    );
         }
+
+        return ApiResponseUtil.getSuccessApiResponse("success");
     }
 }
