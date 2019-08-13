@@ -259,7 +259,7 @@ public class ObjectService {
 
             // 테넌트 맵이 없는 경우
             if (tenantObjectMap == null) {
-                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(new HashMap<String, CflObject>());
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(tenantObjectMap);
             }

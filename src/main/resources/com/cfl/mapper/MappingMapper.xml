@@ -168,11 +168,34 @@
                 AND auth_id = #{authority.authorityId})
     </delete>
 
-    <delete id="deleteObjectMapping">
+    <delete id="deleteObjectAuthorityMapping">
         DELETE FROM
             cfl_object_authority_mapping
         WHERE
             objt_seq = (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{object.serviceName}
+                AND tnnt_id = #{object.tenantId}
+                AND objt_id =#{object.objectId})
+    </delete>
+
+    <delete id="deleteObjectSubObjectMapping">
+        DELETE FROM
+            cfl_object_subobject_mapping
+        WHERE
+            objt_seq = (SELECT
+                objt_seq
+            FROM
+                cfl_object
+            WHERE
+                svc_nm = #{object.serviceName}
+                AND tnnt_id = #{object.tenantId}
+                AND objt_id =#{object.objectId})
+            OR
+            sub_objt_seq = (SELECT
                 objt_seq
             FROM
                 cfl_object

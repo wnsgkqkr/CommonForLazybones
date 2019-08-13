@@ -19,7 +19,8 @@ public interface MappingMapper {
     boolean isExistObjectAuthorityMapping(@Param("objectId") String objectId, @Param("authority") Authority authority);
     void insertObjectAuthority(@Param("objectId") String objectId, @Param("authority") Authority authority);
     void deleteObjectAuthority(@Param("objectId") String objectId, @Param("authority") Authority authority);
-    void deleteObjectMapping(@Param("object") CflObject object);
+    void deleteObjectAuthorityMapping(@Param("object") CflObject object);
+    void deleteObjectSubObjectMapping(@Param("object") CflObject object);
 
     boolean isExistAuthorityUserMapping(@Param("authorityId") String authorityId, @Param("user") User user);
     void insertAuthorityUser(@Param("authorityId") String authorityId, @Param("user") User user);

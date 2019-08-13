@@ -44,7 +44,8 @@ public class MappingService {
     }
 
     public void removeObjectMapping(CflObject object) {
-        mappingMapper.deleteObjectMapping(object);
+        mappingMapper.deleteObjectAuthorityMapping(object);
+        mappingMapper.deleteObjectSubObjectMapping(object);
     }
 
     public boolean isExistAuthorityUserMapping(String authorityId, User user) {
