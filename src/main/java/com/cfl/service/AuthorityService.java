@@ -232,7 +232,7 @@ public class AuthorityService{
 
             // 테넌트 맵이 없는 경우
             if (tenantAuthorityMap == null) {
-                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(new HashMap<String, Authority>());
             } else {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(tenantAuthorityMap);
             }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -220,7 +221,7 @@ public class CodeService{
             if (codeMap != null) {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(new HashMap<String, Code>());
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);
@@ -240,7 +241,7 @@ public class CodeService{
             if (codeMap != null) {
                 apiResponse = ApiResponseUtil.getSuccessApiResponse(codeMap);
             } else {
-                apiResponse = ApiResponseUtil.getMissingValueApiResponse();
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(new HashMap<String, Code>());
             }
         } catch (Exception e) {
             log.error("getTenantCodeList fail", e);
