@@ -11,12 +11,14 @@
     <groupId>com</groupId>
     <artifactId>cfl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>cfl</name>
     <description>Common for lazybones</description>
 
     <properties>
         <java.version>12</java.version>
-        <deploy.phase>local</deploy.phase>
+        <maven.compiler.source>12</maven.compiler.source>
+		<maven.compiler.target>12</maven.compiler.target>
     </properties>
 
     <profiles>
@@ -25,6 +27,9 @@
             <properties>
                 <deploy.phase>local</deploy.phase>
             </properties>
+            <activation>
+               <activeByDefault>true</activeByDefault>
+            </activation>
         </profile>
         <profile>
             <id>dev</id>
