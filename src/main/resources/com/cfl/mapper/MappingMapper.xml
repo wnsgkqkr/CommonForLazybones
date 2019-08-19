@@ -119,6 +119,10 @@
         WHERE
            ob.objt_id = #{objectId}
            AND auth.auth_id = #{authority.authorityId}
+           AND ob.tnnt_id = #{authority.tenantId}
+           AND ob.svc_nm = #{authority.serviceName}
+           AND auth.tnnt_id = #{authority.tenantId}
+           AND auth.svc_nm = #{authority.serviceName}
     </select>
 
     <insert id="insertObjectAuthority">
@@ -221,6 +225,10 @@
         WHERE
            auth.auth_id = #{authorityId}
            AND user.user_id = #{user.userId}
+           AND auth.tnnt_id = #{user.tenantId}
+           AND auth.svc_nm = #{user.serviceName}
+           AND user.tnnt_id = #{user.tenantId}
+           AND user.svc_nm = #{user.serviceName}
     </select>
 
     <insert id="insertAuthorityUser">
@@ -435,6 +443,10 @@
         WHERE
            ob.objt_id = #{objectId}
            AND subob.objt_id = #{subObject.objectId}
+           AND ob.tnnt_id = #{subObject.tenantId}
+           AND ob.svc_nm = #{subObject.serviceName}
+           AND subob.tnnt_id = #{subObject.tenantId}
+           AND subob.svc_nm = #{subObject.serviceName}
     </select>
 
     <insert id="insertObjectSubObject">
