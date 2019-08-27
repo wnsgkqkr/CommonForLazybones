@@ -33,11 +33,11 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
                 return true;
             }
         } catch (Exception e) {
-            log.error("unauthorized server" ,e);
+            log.error(request.getRemoteAddr() + " unauthorized server" ,e);
             throw new UnauthorizedException("unauthorized server");
         }
 
-        log.error("unauthorized server");
+        log.error(request.getRemoteAddr() + "unauthorized server");
         throw new UnauthorizedException("unauthorized server");
     }
 }
