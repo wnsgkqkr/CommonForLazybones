@@ -26,7 +26,7 @@ public class HistoryService {
         String requestUrl = httpRequest.getRequestURI();
         String requestContents = gson.toJson(requestObject);
         String returnContents = gson.toJson(response);
-        String requestPerson = null;
+        String requestPerson = httpRequest.getHeader("requester");
         String registerServerIp = httpRequest.getRemoteAddr();
         String returnMessage = null;
 

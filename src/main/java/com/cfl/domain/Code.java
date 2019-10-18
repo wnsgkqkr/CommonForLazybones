@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,7 +21,7 @@ public class Code {
     private String tenantId;
     private String serviceName;
     
-    private Map<String, Code> subCodes;
+    private List<Code> subCodeList;
     private Map<String, String> multiLanguageMap;
 
     public Code() { }

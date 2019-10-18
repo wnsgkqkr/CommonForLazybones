@@ -409,6 +409,8 @@
             cd.svc_nm = #{serviceName}
 	        AND cd.tnnt_id = #{tenantId}
 	        AND scdm.cd_seq = #{codeSequence}
+	    ORDER BY
+	        cd.ord ASC
     </select>
 
     <select id="selectUsingLowLevelCodes" resultMap="Code">
@@ -425,6 +427,8 @@
             AND cd.use_yn = '1'
 	        AND cd.tnnt_id = #{tenantId}
 	        AND scdm.cd_seq = #{codeSequence}
+	    ORDER BY
+	        cd.ord ASC
     </select>
 
     <select id="isExistObjectSubObjectMapping" resultType="boolean">

@@ -581,11 +581,7 @@ public class CacheService {
     // 코드 오브젝트에 서브코드들, 다국어맵, 풀시퀀스 세팅해주고 캐시가 될 맵에 넣어준다.
     private Map<String, Code> putCodeMap(Map<String, Code> codeMap, Code code, List<Code> subCodes, List<Map<String, String>> codeMultiLanguageMapList, String fullDepth, String fullSequence) {
 
-        Map<String, Code> subCodeMap = new HashMap<>();
-        for (Code subCode : subCodes) {
-            subCodeMap.put(subCode.getCodeId(), subCode);
-        }
-        code.setSubCodes(subCodeMap);
+        code.setSubCodeList(subCodes);
 
         Map<String, String> multiLanguageMap = getMultiLanguageMap(code.getCodeSequence(), codeMultiLanguageMapList);
         code.setMultiLanguageMap(multiLanguageMap);
