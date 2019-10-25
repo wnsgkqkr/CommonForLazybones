@@ -351,16 +351,20 @@
 	        auth.auth_nm
     </select>
 
-    <insert id="createCodeSequenceAndSubCodeSequenceMapping">
+    <insert id="insertCodeSequenceAndSubCodeSequenceMapping">
         INSERT INTO
             cfl_code_subcode_mapping(
                 cd_seq
                 , sub_cd_seq
+                , depth
+                , tre_id
             )
         VALUES
             (
                 #{codeSequence}
                 , #{subCodeSequence}
+                , #{depth}
+                , #{treeId}
             )
 
     </insert>
@@ -373,10 +377,10 @@
         WHERE
             cd.svc_nm = #{serviceName}
 	        AND cd.tnnt_id = #{tenantId}
-            AND NOT EXISTS (
+            AND EXISTS (
 					SELECT *
-					FROM cfl_code_subcode_mapping scdm
-                    WHERE cd.cd_seq = scdm.sub_cd_seq
+					FROM cfl_code_tree cdtr
+                    WHERE cd.cd_seq = cdtr.root_cd_seq
                     )
     </select>
 
@@ -389,10 +393,10 @@
             cd.svc_nm = #{serviceName}
 	        AND cd.tnnt_id = #{tenantId}
 	        AND cd.use_yn = '1'
-            AND NOT EXISTS (
+            AND EXISTS (
 					SELECT *
-					FROM cfl_code_subcode_mapping scdm
-                    WHERE cd.cd_seq = scdm.sub_cd_seq
+					FROM cfl_code_tree cdtr
+                    WHERE cd.cd_seq = cdtr.root_cd_seq
                     )
     </select>
 
@@ -406,9 +410,10 @@
             ON
                 cd.cd_seq = scdm.sub_cd_seq
         WHERE
-            cd.svc_nm = #{serviceName}
-	        AND cd.tnnt_id = #{tenantId}
-	        AND scdm.cd_seq = #{codeSequence}
+            cd.svc_nm = #{highLevelCode.serviceName}
+	        AND cd.tnnt_id = #{highLevelCode.tenantId}
+	        AND scdm.cd_seq = #{highLevelCode.codeSequence}
+	        AND scdm.depth = #{depth}
 	    ORDER BY
 	        cd.ord ASC
     </select>
@@ -423,10 +428,11 @@
             ON
                 cd.cd_seq = scdm.sub_cd_seq
         WHERE
-            cd.svc_nm = #{serviceName}
+            cd.svc_nm = #{highLevelCode.serviceName}
             AND cd.use_yn = '1'
-	        AND cd.tnnt_id = #{tenantId}
-	        AND scdm.cd_seq = #{codeSequence}
+	        AND cd.tnnt_id = #{highLevelCode.tenantId}
+	        AND scdm.cd_seq = #{highLevelCode.codeSequence}
+	        AND scdm.depth = #{depth}
 	    ORDER BY
 	        cd.ord ASC
     </select>

@@ -6,6 +6,7 @@ import com.cfl.domain.CacheUpdateRequest;
 import com.cfl.domain.Code;
 import com.cfl.mapper.CodeMapper;
 import com.cfl.util.ApiResponseUtil;
+import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,15 +61,17 @@ public class CodeService{
             if (isExistCode(code, fullIdPath)) {
                 apiResponse = ApiResponseUtil.getDuplicateCreationApiResponse();
             } else {
-                // 최상위 코드일 경우 연결 없이 생성만 한다.
+                // 코드생성 -> 1. 최상위 코드인 경우 해당 최상위 코드의 코드 트리 생성 2. 하위 코드인 경우 해당 코드트리에 코드 매핑 추가 -> 동기화 진행
                 if (fullIdPath.size() == 1 && !"".equals(fullIdPath.get(0))) {
                     codeMapper.insertCode(code);
                     codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
+                    codeMapper.insertCodeTree(Constant.TREE_ID_PREFIX + code.getCodeSequence(), code.getCodeSequence());
                     networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "code"));
                     apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
                 } else {
                     String highLevelFullDepth = getHighLevelFullDepth(fullIdPath);
                     long highLevelCodeSequence = getCodeSequenceFromCache(code, highLevelFullDepth);
+                    String treeId = Constant.TREE_ID_PREFIX + getCodeSequenceFromCache(code, getRootFullDepth(fullIdPath));
 
                     // 코드 연결에 문제가 있는 경우 (상위 코드 시퀀스가 없거나 상위 코드 full depth가 잘못된 경우)
                     if (highLevelCodeSequence == -1 || "".equals(highLevelFullDepth)) {
@@ -76,7 +79,7 @@ public class CodeService{
                     } else {
                         codeMapper.insertCode(code);
                         codeMapper.insertCodeMultiLanguage(code.getMultiLanguageCode(), code.getMultiLanguageMap());
-                        mappingService.createCodeSequenceAndSubCodeSequenceMapping(highLevelCodeSequence, code.getCodeSequence());
+                        mappingService.createCodeSequenceAndSubCodeSequenceMapping(highLevelCodeSequence, code.getCodeSequence(), treeId, getCodeDepth(code, highLevelFullDepth));
                         networkService.sendProvideServersToInit("cfl", new CacheUpdateRequest(serviceName, tenantId, "code"));
                         apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
                     }
@@ -91,13 +94,15 @@ public class CodeService{
         return apiResponse;
     }
 
-    // todo 코드 매핑시 문제가 있는 코드 매핑 제외하는 로직 개발 필요
-    public ApiResponse createCodeMapping(String serviceName, String tenantId, Long codeSequence, Long subCodeSequence) {
+    public ApiResponse createCodeMapping(String serviceName, String tenantId, String codeFullIdPath, String subCodeFullIdPath) {
         ApiResponse apiResponse;
-        Code code = new Code(codeSequence);
+        Code code = new Code(serviceName, tenantId);
+        String treeId = Constant.TREE_ID_PREFIX + getCodeSequenceFromCache(code, getRootFullDepth(codeFullIdPath));
+        long codeSequence = getCodeSequenceFromCache(code, codeFullIdPath);
+        long subCodeSequence = getCodeSequenceFromCache(code, subCodeFullIdPath);
 
         try {
-            mappingService.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence);
+            mappingService.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence, treeId, getCodeDepth(code, codeFullIdPath));
             apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
 
         } catch (Exception e) {
@@ -271,6 +276,24 @@ public class CodeService{
         return fullDepth.toString();
     }
 
+    private String getRootFullDepth(List<String> fullIdPath) {
+        StringBuilder rootFullDepth = new StringBuilder();
+
+        String rootId = fullIdPath.get(0);
+        rootFullDepth.append(rootId).append(":");
+
+        return rootFullDepth.toString();
+    }
+
+    private String getRootFullDepth(String fullIdPath) {
+        StringBuilder rootFullDepth = new StringBuilder();
+
+        String rootId = fullIdPath.split(":")[0];
+        rootFullDepth.append(rootId).append(":");
+
+        return rootFullDepth.toString();
+    }
+
     private String getHighLevelFullDepth(List<String> fullIdPath) {
         StringBuilder highLevelFullDepth = new StringBuilder();
 
@@ -313,6 +336,10 @@ public class CodeService{
         }
 
         return codeFromCache.getCodeSequence();
+    }
+
+    private int getCodeDepth(Code code, String getFullDepth) {
+        return getFullDepth.split(":").length;
     }
 
     private Map<String, Code> getTenantUsingCodeMapFromCache(Code code) {
