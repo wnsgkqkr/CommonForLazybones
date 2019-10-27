@@ -434,7 +434,6 @@ public class CacheService {
         }
     }
 
-    // todo 코드 캐싱 부모/자식 관계로 연결 시키는 로직 필요
     @PostConstruct
     public ApiResponse createCodeCache() {
         try {
@@ -505,10 +504,10 @@ public class CacheService {
                         // 코드 정보 및 권한 매핑 정보 세팅
                         List<Map<String, String>> codeMultiLanguageMapList = codeService.getCodeMultiLanguageMapList(serviceName, tenantId);
 
-                        // 최상위 코드들을 가져온다(매핑테이블엔 없고 코드테이블엔 있는 코드들)
+                        // 최상위 코드들을 가져온다(코드트리 루트 코드들)
                         List<Code> topLevelCodes = mappingService.getTopLevelCodes(serviceName, tenantId);
 
-                        codeIdMap = createCodeMap(codeIdMap, topLevelCodes, "", ":", codeMultiLanguageMapList);
+                        codeIdMap = createCodeMap(codeIdMap, topLevelCodes, "", ":", codeMultiLanguageMapList, 1);
                         tenantIdMap.put(tenantId, codeIdMap);
                     }
                 }
@@ -539,7 +538,7 @@ public class CacheService {
 
                         List<Code> topLevelCodes = mappingService.getUsingTopLevelCodes(serviceName, tenantId);
 
-                        codeIdMap = createUsingCodeMap(codeIdMap, topLevelCodes, "", ":", codeMultiLanguageMapList);
+                        codeIdMap = createUsingCodeMap(codeIdMap, topLevelCodes, "", ":", codeMultiLanguageMapList, 1);
                         tenantIdMap.put(tenantId, codeIdMap);
                     }
                 }
@@ -551,29 +550,31 @@ public class CacheService {
 
     // fullDepth = PID:PID:PID:PID:....:ID , fullSequence = :PSEQ:PSEQ:PSEQ:....:SEQ -> 순환이 안생기게 시퀀스로 :로 나눠서 판별(무한루프)
     // 자기 자신에 해당하는 ID만들고 자식 있을시 매핑테이블에서 찾아서 자신 + 된 문자열 넘겨줘서 풀시퀀스 풀뎁스 완성
-    private Map<String, Code> createCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList) {
+    private Map<String, Code> createCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList, int depth) {
         for (Code highLevelCode : highLevelCodes) {
             String nextFullDepth = fullDepth + highLevelCode.getCodeId() + ":";
             String nextFullSequence = fullSequence + highLevelCode.getCodeSequence() + ":";
-            List<Code> lowLevelCodes = mappingService.getLowLevelCodes(highLevelCode);
+
+            List<Code> lowLevelCodes = mappingService.getLowLevelCodes(highLevelCode, depth);
 
             codeMap = putCodeMap(codeMap, highLevelCode, lowLevelCodes, codeMultiLanguageMapList, nextFullDepth, nextFullSequence);
 
-            createCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList);
+            createCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList, depth+1);
         }
         return codeMap;
     }
 
     // createCodeMap과 동일 사용중인애들만 저장
-    private Map<String, Code> createUsingCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList) {
+    private Map<String, Code> createUsingCodeMap(Map<String, Code> codeMap, List<Code> highLevelCodes, String fullDepth, String fullSequence, List<Map<String, String>> codeMultiLanguageMapList, int depth) {
         for (Code highLevelCode : highLevelCodes) {
             String nextFullDepth = fullDepth + highLevelCode.getCodeId() + ":";
             String nextFullSequence = fullSequence + highLevelCode.getCodeSequence() + ":";
-            List<Code> lowLevelCodes = mappingService.getUsingLowLevelCodes(highLevelCode);
+
+            List<Code> lowLevelCodes = mappingService.getUsingLowLevelCodes(highLevelCode, depth);
 
             codeMap = putCodeMap(codeMap, highLevelCode, lowLevelCodes, codeMultiLanguageMapList, nextFullDepth, nextFullSequence);
 
-            createUsingCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList);
+            createUsingCodeMap(codeMap, lowLevelCodes, nextFullDepth, nextFullSequence, codeMultiLanguageMapList, depth+1);
         }
         return codeMap;
     }

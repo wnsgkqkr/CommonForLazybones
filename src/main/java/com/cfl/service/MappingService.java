@@ -68,9 +68,8 @@ public class MappingService {
         return mappingMapper.selectUserAuthorities(user);
     }
 
-    //TODO 시퀀스로 들어갈때 판별
-    public void createCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence) {
-        mappingMapper.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence);
+    public void createCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence, String treeId, int depth) {
+        mappingMapper.insertCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence, treeId, depth);
     }
 
     public List<Code> getTopLevelCodes(String serviceName, String tenantId) {
@@ -81,12 +80,12 @@ public class MappingService {
         return mappingMapper.selectUsingTopLevelCodes(serviceName, tenantId);
     }
 
-    public List<Code> getLowLevelCodes(Code highLevelCode) {
-        return mappingMapper.selectLowLevelCodes(highLevelCode);
+    public List<Code> getLowLevelCodes(Code highLevelCode, int depth) {
+        return mappingMapper.selectLowLevelCodes(highLevelCode, depth);
     }
 
-    public List<Code> getUsingLowLevelCodes(Code highLevelCode) {
-        return mappingMapper.selectUsingLowLevelCodes(highLevelCode);
+    public List<Code> getUsingLowLevelCodes(Code highLevelCode, int depth) {
+        return mappingMapper.selectUsingLowLevelCodes(highLevelCode, depth);
     }
 
     public void createObjectSubObjectMapping(String objectId, CflObject object) {

@@ -31,11 +31,11 @@ public interface MappingMapper {
     List<User> selectAuthorityUsers(@Param("authority") Authority authority);
     List<Authority> selectUserAuthorities(@Param("user") User user);
 
-    void createCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence);
+    void insertCodeSequenceAndSubCodeSequenceMapping(Long codeSequence, Long subCodeSequence, String treeId, int depth);
     List<Code> selectTopLevelCodes(String serviceName, String tenantId);
     List<Code> selectUsingTopLevelCodes(String serviceName, String tenantId);
-    List<Code> selectLowLevelCodes(Code highLevelCode);
-    List<Code> selectUsingLowLevelCodes(Code highLevelCode);
+    List<Code> selectLowLevelCodes(Code highLevelCode, int depth);
+    List<Code> selectUsingLowLevelCodes(Code highLevelCode, int depth);
 
     boolean isExistObjectSubObjectMapping(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);
     void insertObjectSubObject(@Param("objectId") String objectId, @Param("subObject") CflObject subObject);

@@ -11,6 +11,7 @@ import java.util.Map;
 public interface CodeMapper {
     void insertCode(@Param("code") Code code);
     void insertCodeMultiLanguage(@Param("multiLanguageCode")  String multiLanguageCode, @Param("multiLanguageMap")  Map<String, String> multiLanguageMap);
+    void insertCodeTree(String treeId, Long rootCodeSequence);
 
     void updateCode(@Param("code") Code code);
 
@@ -18,6 +19,7 @@ public interface CodeMapper {
     void deleteCodeMultiLanguage(@Param("multiLanguageCode")  String multiLanguageCode);
 
     Code selectCode(@Param("code") Code code);
+    Integer selectDepth(Long codeSequence, String treeId);
 
     List<Code> selectAllCodes();
     List<Code> selectServiceCodes(@Param("serviceName") String serviceName);

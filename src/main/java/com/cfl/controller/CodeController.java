@@ -25,12 +25,12 @@ public class CodeController {
         return codeService.createCode(serviceName, tenantId, fullIdPath, code);
     }
 
-    @PostMapping(value = {"/{serviceName}/{tenantId}/code/mapping/{codeSequence}/{subCodeSequence}", "/{serviceName}/code/mapping/{codeSequence}/{subCodeSequence}"})
+    @PostMapping(value = {"/{serviceName}/{tenantId}/code/mapping", "/{serviceName}/code/mapping"})
     public ApiResponse createCodeMapping(@PathVariable("serviceName") String serviceName,
                                          @PathVariable(name = "tenantId", required = false) String tenantId,
-                                         @PathVariable("codeSequence") Long codeSequence,
-                                         @PathVariable("subCodeSequence") Long subCodeSequence) {
-        return codeService.createCodeMapping(serviceName, tenantId, codeSequence, subCodeSequence);
+                                         @RequestBody String codeFullIdPath,
+                                         @RequestBody String subCodeFullIdPath) {
+        return codeService.createCodeMapping(serviceName, tenantId, codeFullIdPath, subCodeFullIdPath);
     }
 
     @PutMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})

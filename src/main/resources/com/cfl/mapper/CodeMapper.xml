@@ -33,11 +33,18 @@
 
     <insert id="insertCodeMultiLanguage">
         INSERT INTO
-        cfl_code_multilanguage(mlng_cd, mlng_nat, mlng_nm)
+            cfl_code_multilanguage (mlng_cd, mlng_nat, mlng_nm)
         VALUES
         <foreach index="key"  item="value" collection="multiLanguageMap" separator=",">
             (#{multiLanguageCode}, #{key}, #{value})
         </foreach>
+    </insert>
+    
+    <insert id="insertCodeTree">
+        INSERT INTO
+            cfl_code_tree (tre_id, root_cd_seq)
+        VALUES
+            (#{treeId}, #{rootCodeSequence})
     </insert>
 
     <update id="updateCode">
