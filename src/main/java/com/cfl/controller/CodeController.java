@@ -7,6 +7,7 @@ import com.cfl.util.WildcardPathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class CodeController {
@@ -28,9 +29,8 @@ public class CodeController {
     @PostMapping(value = {"/{serviceName}/{tenantId}/code/mapping", "/{serviceName}/code/mapping"})
     public ApiResponse createCodeMapping(@PathVariable("serviceName") String serviceName,
                                          @PathVariable(name = "tenantId", required = false) String tenantId,
-                                         @RequestBody String codeFullIdPath,
-                                         @RequestBody String subCodeFullIdPath) {
-        return codeService.createCodeMapping(serviceName, tenantId, codeFullIdPath, subCodeFullIdPath);
+                                         @RequestBody Map<String, Object> codePath) {
+        return codeService.createCodeMapping(serviceName, tenantId, codePath);
     }
 
     @PutMapping(value = {CODE_URL_WITH_TENANT, CODE_URL_WITHOUT_TENANT})

@@ -8,6 +8,7 @@ import com.cfl.mapper.CodeMapper;
 import com.cfl.util.ApiResponseUtil;
 import com.cfl.util.Constant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,10 +72,11 @@ public class CodeService{
                 } else {
                     String highLevelFullDepth = getHighLevelFullDepth(fullIdPath);
                     long highLevelCodeSequence = getCodeSequenceFromCache(code, highLevelFullDepth);
-                    String treeId = Constant.TREE_ID_PREFIX + getCodeSequenceFromCache(code, getRootFullDepth(fullIdPath));
+                    long rootCodeSequence = getCodeSequenceFromCache(code, getRootFullDepth(fullIdPath));
+                    String treeId = Constant.TREE_ID_PREFIX + rootCodeSequence;
 
                     // 코드 연결에 문제가 있는 경우 (상위 코드 시퀀스가 없거나 상위 코드 full depth가 잘못된 경우)
-                    if (highLevelCodeSequence == -1 || "".equals(highLevelFullDepth)) {
+                    if (rootCodeSequence == -1 || highLevelCodeSequence == -1 || "".equals(highLevelFullDepth)) {
                         apiResponse = ApiResponseUtil.getCodeMappingErrorApiResponse();
                     } else {
                         codeMapper.insertCode(code);
@@ -94,20 +96,43 @@ public class CodeService{
         return apiResponse;
     }
 
-    public ApiResponse createCodeMapping(String serviceName, String tenantId, String codeFullIdPath, String subCodeFullIdPath) {
+    public ApiResponse createCodeMapping(String serviceName, String tenantId, Map<String, Object> codePath) {
         ApiResponse apiResponse;
         Code code = new Code(serviceName, tenantId);
-        String treeId = Constant.TREE_ID_PREFIX + getCodeSequenceFromCache(code, getRootFullDepth(codeFullIdPath));
-        long codeSequence = getCodeSequenceFromCache(code, codeFullIdPath);
-        long subCodeSequence = getCodeSequenceFromCache(code, subCodeFullIdPath);
+        String codeFullIdPath = MapUtils.getString(codePath, "codeFullIdPath");
+        String subCodeFullIdPath = MapUtils.getString(codePath, "subCodeFullIdPath");
+        boolean isRoot = MapUtils.getBoolean(codePath, "isRoot");
 
-        try {
-            mappingService.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence, treeId, getCodeDepth(code, codeFullIdPath));
-            apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+        long rootCodeSequence;
+        if (isRoot) {
+            rootCodeSequence = getCodeSequenceFromCache(code, codeFullIdPath);
+        } else {
+            rootCodeSequence = getCodeSequenceFromCache(code, getRootFullDepth(codeFullIdPath));
+        }
+        String treeId = Constant.TREE_ID_PREFIX + rootCodeSequence;
 
-        } catch (Exception e) {
-            log.error("createCodeMapping fail", e);
-            apiResponse = ApiResponseUtil.getFailureApiResponse();
+        String[] subCodeFullIdPathArray = subCodeFullIdPath.split(":");
+        String subCodeId = subCodeFullIdPathArray[subCodeFullIdPathArray.length - 1] + ":";
+
+//        rootCodeSequence가 존재하지 않거나 코드매핑이 이미 존재하는 경우 매핑 추가 에러
+        if (rootCodeSequence == -1 || getCodeFromCache(code, codeFullIdPath + subCodeId) != null) {
+            apiResponse = ApiResponseUtil.getCodeMappingErrorApiResponse();
+        } else {
+            long codeSequence = getCodeSequenceFromCache(code, codeFullIdPath);
+            long subCodeSequence = getCodeSequenceFromCache(code, subCodeFullIdPath);
+
+            if (isRoot) {
+               codeMapper.insertCodeTree(treeId, rootCodeSequence);
+            }
+
+            try {
+                mappingService.createCodeSequenceAndSubCodeSequenceMapping(codeSequence, subCodeSequence, treeId, getCodeDepth(code, codeFullIdPath));
+                apiResponse = ApiResponseUtil.getSuccessApiResponse(code);
+
+            } catch (Exception e) {
+                log.error("createCodeMapping fail", e);
+                apiResponse = ApiResponseUtil.getFailureApiResponse();
+            }
         }
 
         historyService.createHistory(serviceName, tenantId, code, apiResponse);

@@ -17,6 +17,7 @@ public class Code {
     private Boolean isUsed;
     private int order;
     private String multiLanguageCode;
+    private String optionCode;
     private String fullSequencePath;
     private String tenantId;
     private String serviceName;
