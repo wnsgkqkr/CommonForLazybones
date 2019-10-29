@@ -13,6 +13,7 @@
         <result property="isUsed" column="use_yn"/>
         <result property="order" column="ord"/>
         <result property="multiLanguageCode" column="mlng_cd"/>
+        <result property="optionCode" column="opt_cd"/>
         <result property="tenantId" column="tnnt_id"/>
         <result property="serviceName" column="svc_nm"/>
     </resultMap>
