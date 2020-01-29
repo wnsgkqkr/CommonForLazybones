@@ -23,6 +23,12 @@ public class NetworkAclController {
         return networkService.createNetworkAcl(serviceName, tenantId, serverIp, server);
     }
 
+    @PostMapping("cfl/{tenantId}/network-acl")
+    public ApiResponse createNetworkAcl(@PathVariable(name = "tenantId", required = false) String tenantId,
+                                        @RequestBody Server server) {
+        return networkService.createNetworkAcl(server.getServiceName(), tenantId, server.getServerIp(), server);
+    }
+
     @PutMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})
     public ApiResponse modifyNetworkAcl(@PathVariable("serviceName") String serviceName,
                                         @PathVariable(name = "tenantId", required = false) String tenantId,

@@ -121,7 +121,12 @@ public class NetworkService {
         List<Server> provideServerList = serverMapper.selectProvideServerByServiceName(serviceName);
 
         for (Server provideServer : provideServerList) {
-            String url = "http://" + provideServer.getServerIp() + ":" + provideServer.getPortNumber() + "/" + provideServer.getServiceName() + "/cache/init";
+            String url;
+            if (provideServer.getPortNumber() != null) {
+                url = "http://" + provideServer.getServerIp() + ":" + provideServer.getPortNumber() + "/" + provideServer.getServiceName() + "/cache/init";
+            } else {
+                url = "http://" + provideServer.getServerIp() + "/" + provideServer.getServiceName() + "/cache/init";
+            }
 
             WebClient.create(url)
                     .post()
