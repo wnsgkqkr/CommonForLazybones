@@ -28,7 +28,8 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
         try {
             Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
-
+            log.info("접근 url : " + request.getRequestURL());
+            log.info("pathVarialbe = " + pathVariables);
             if (networkService.isAllowedServer(pathVariables.get("serviceName"), request.getRemoteAddr())) {
                 return true;
             }
