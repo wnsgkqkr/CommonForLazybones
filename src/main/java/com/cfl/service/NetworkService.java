@@ -104,10 +104,13 @@ public class NetworkService {
             provideServer.setServerName(ip.getHostName());
             provideServer.setServiceName("cfl");
 
+            log.info("접속 Ip = " + ip.toString());
             if (serverMapper.selectProvideServerByServerIp(provideServer) == null) {
                 serverMapper.insertProvideServer(provideServer);
                 serverMapper.insertAllowedServer(provideServer);
+                log.info("접속 Ip 등록 완료");
             }
+            log.info("접속 Ip 등록 실패");
         } catch (Exception e) {
             e.printStackTrace();
         }
