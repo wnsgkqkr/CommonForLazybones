@@ -27,7 +27,7 @@ public class HistoryService {
         String requestContents = gson.toJson(requestObject);
         String returnContents = gson.toJson(response);
         String requestPerson = httpRequest.getHeader("requester");
-        String registerServerIp = httpRequest.getRemoteAddr();
+        String registerServerIp = getClientIp(httpRequest);
         String returnMessage = null;
 
         if (response != null) {
@@ -39,5 +39,14 @@ public class HistoryService {
         historyMapper.insertHistory(history);
 
         return history;
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String clientIp = request.getHeader("X-FORWARDED-FOR");
+        if (clientIp == null) {
+            clientIp = request.getRemoteAddr();
+        }
+
+        return clientIp;
     }
 }

@@ -22,4 +22,10 @@ public class Server {
         this(serviceName);
         this.serverIp = serverIp;
     }
+
+    public Server(String serviceName, String serverIp, String serverName, String portNumber) {
+        this(serviceName, serverIp);
+        this.serverName = serverName;
+        this.portNumber = portNumber;
+    }
 }

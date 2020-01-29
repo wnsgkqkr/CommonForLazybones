@@ -23,10 +23,18 @@ public class NetworkAclController {
         return networkService.createNetworkAcl(serviceName, tenantId, serverIp, server);
     }
 
-    @PostMapping("cfl/{tenantId}/network-acl")
-    public ApiResponse createNetworkAcl(@PathVariable(name = "tenantId", required = false) String tenantId,
+    @PostMapping("/{serviceName}/{tenantId}/network-acl")
+    public ApiResponse createNetworkAcl(@PathVariable("serviceName") String serviceName,
+                                        @PathVariable(name = "tenantId", required = false) String tenantId,
                                         @RequestBody Server server) {
         return networkService.createNetworkAcl(server.getServiceName(), tenantId, server.getServerIp(), server);
+    }
+
+    @PostMapping("/{serviceName}/{tenantId}/provide")
+    public ApiResponse createProvideServer(@PathVariable("serviceName") String serviceName,
+                                           @PathVariable(name = "tenantId", required = false) String tenantId,
+                                           @RequestBody Server server) {
+        return networkService.createProvideServer(server.getServiceName(), server.getServerName(), server.getServerIp(), server.getPortNumber());
     }
 
     @PutMapping(value = {NETWORK_ACL_URL_WITH_TENANT, NETWORK_ACL_URL_WITHOUT_TENANT})

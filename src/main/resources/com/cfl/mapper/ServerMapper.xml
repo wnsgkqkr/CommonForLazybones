@@ -51,10 +51,12 @@
 
     <insert id="insertProvideServer">
         INSERT INTO
-            cfl_provide_server (svr_ip, svr_nm)
+            cfl_provide_server (svr_ip, svr_nm, svc_nm, port_no)
         VALUE
             (#{server.serverIp}
-            , #{server.serverName})
+            , #{server.serverName}
+            , #{server.serviceName}
+            , #{server.portNumber})
     </insert>
 
     <select id="selectProvideServerByServerIp" resultMap="Server">

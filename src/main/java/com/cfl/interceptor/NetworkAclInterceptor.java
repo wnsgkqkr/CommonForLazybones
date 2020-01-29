@@ -30,15 +30,24 @@ public class NetworkAclInterceptor extends HandlerInterceptorAdapter {
 
             log.info("접근 url : " + request.getRequestURL());
             log.info("pathVarialbe = " + pathVariables);
-            if (networkService.isAllowedServer(pathVariables.get("serviceName"), request.getRemoteAddr())) {
+            if (networkService.isAllowedServer(pathVariables.get("serviceName"), getClientIp(request))) {
                 return true;
             }
         } catch (Exception e) {
-            log.error(request.getRemoteAddr() + " unauthorized server" ,e);
+            log.error(getClientIp(request) + " unauthorized server" ,e);
             throw new UnauthorizedException("unauthorized server");
         }
 
-        log.error(request.getRemoteAddr() + "unauthorized server");
+        log.error(getClientIp(request) + "unauthorized server");
         throw new UnauthorizedException("unauthorized server");
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String clientIp = request.getHeader("X-FORWARDED-FOR");
+        if (clientIp == null) {
+            clientIp = request.getRemoteAddr();
+        }
+
+        return clientIp;
     }
 }

@@ -110,9 +110,22 @@ public class NetworkService {
                 serverMapper.insertAllowedServer(provideServer);
                 log.info("접속 Ip 등록 완료");
             }
-            log.info("접속 Ip 등록 실패");
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public ApiResponse createProvideServer(String serviceName, String serverName, String serverIp, String portNumber) {
+        try {
+            Server provideServer = new Server(serviceName, serverIp, serverName, portNumber);
+
+            log.info("추가 provide server Ip = " + serverIp);
+            if (serverMapper.selectProvideServerByServerIp(provideServer) == null) {
+                serverMapper.insertProvideServer(provideServer);
+            }
+            return ApiResponseUtil.getSuccessApiResponse(provideServer);
+        } catch (Exception e) {
+            return ApiResponseUtil.getFailureApiResponse();
         }
     }
 
